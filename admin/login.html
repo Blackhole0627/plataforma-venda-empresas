@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entrar · Área da equipe</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body class="admin">
+  <div class="login">
+    <div class="login-art" id="art">
+      <div id="art-logo"></div>
+      <div>
+        <h2>Área da equipe</h2>
+        <p>Aqui chegam os cadastros das empresas. Vocês conferem, montam o anúncio e publicam no site.</p>
+        <div class="avatar-stack" id="avatars" style="margin-top:22px"></div>
+      </div>
+    </div>
+    <div class="login-form">
+      <form id="form" novalidate>
+        <div id="form-logo" style="margin-bottom:28px"></div>
+        <h1>Entrar</h1>
+        <p class="muted">Use seu e-mail e senha da equipe.</p>
+        <div class="demo-hint"><i data-lucide="info"></i><span>Acesso de teste já preenchido. É só clicar em Entrar.</span></div>
+        <div class="field"><label for="email">E-mail</label>
+          <div class="input-icon"><i data-lucide="mail"></i><input class="input" id="email" type="email" autocomplete="username" value="equipe@passaponto.com.br"></div>
+          <span class="error">Digite seu e-mail.</span></div>
+        <div class="field"><label for="senha">Senha</label>
+          <div class="input-icon"><i data-lucide="lock"></i><input class="input" id="senha" type="password" autocomplete="current-password" value="equipe123"></div>
+          <span class="error">Digite sua senha.</span></div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Entrar <i data-lucide="arrow-right"></i></button>
+        <p style="text-align:center;margin-top:20px"><a href="/index.html"><i data-lucide="arrow-left" style="width:14px;height:14px;vertical-align:-2px"></i> Voltar pro site</a></p>
+      </form>
+    </div>
+  </div>
+
+  <script src="/assets/js/data.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    (function () {
+      const $ = id => document.getElementById(id);
+      $('art').style.backgroundImage = 'url(' + PP.photoUrl(PP.IMAGENS.login, 1400) + ')';
+      $('art-logo').innerHTML = PP.logo(true);
+      $('form-logo').innerHTML = PP.logo();
+      $('avatars').innerHTML = PP.EQUIPE.map(p => '<img src="' + PP.photoUrl(p.foto, 100) + '" alt="' + PP.esc(p.nome) + '">').join('');
+      const next = PP.param('next');
+      if (PP.Admin.getSession()) location.replace(next || '/admin/index.html');
+      $('form').addEventListener('submit', e => {
+        e.preventDefault();
+        const okE = /\S+@\S+\.\S+/.test($('email').value), okS = $('senha').value.length >= 4;
+        $('email').closest('.field').classList.toggle('invalid', !okE);
+        $('senha').closest('.field').classList.toggle('invalid', !okS);
+        if (!okE || !okS) return;
+        PP.Admin.login($('email').value);
+        location.href = next && next.startsWith('/admin/') ? next : '/admin/index.html';
+      });
+    })();
+  </script>
+</body>
+</html>

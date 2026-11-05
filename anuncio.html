@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Empresa à venda · PassaPonto</title>
+  <meta name="description" content="Empresa à venda com sigilo. Veja valores, faturamento e estrutura.">
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body data-page="comprar">
+  <header id="site-header"></header>
+
+  <main id="main" class="container"></main>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Fotos do anúncio">
+    <button class="lb-close" id="lb-close" aria-label="Fechar"><i data-lucide="x"></i></button>
+    <button class="lb-prev" id="lb-prev" aria-label="Foto anterior"><i data-lucide="chevron-left"></i></button>
+    <img id="lb-img" alt="">
+    <button class="lb-next" id="lb-next" aria-label="Próxima foto"><i data-lucide="chevron-right"></i></button>
+    <span class="lb-count" id="lb-count"></span>
+  </div>
+
+  <footer id="site-footer"></footer>
+
+  <script src="/assets/js/data.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script>
+    (function () {
+      const { Store, esc, money, num, ic, photoUrl } = PP;
+      const main = document.getElementById('main');
+
+      // /empresa-a-venda/academia-em-curitiba-pr-pp1101  or  /anuncio.html?id=1
+      const slugMatch = location.pathname.match(/^\/empresa-a-venda\/([a-z0-9-]+)\/?$/);
+      let a = null;
+      if (slugMatch) a = Store.anuncioByCodigo(slugMatch[1].split('-').pop());
+      else if (PP.param('id')) a = Store.anuncio(PP.param('id'));
+      else if (PP.param('codigo')) a = Store.anuncioByCodigo(PP.param('codigo'));
+
+      const preview = PP.param('preview') === '1';
+      if (!a || (a.status !== 'publicado' && !preview)) {
+        main.innerHTML = '<div class="empty" style="margin:60px 0"><div class="empty-icon">' + ic('search-x') + '</div><h2>Anúncio não encontrado</h2><p class="muted">Esse anúncio pode ter sido vendido ou pausado.</p><a class="btn btn-primary" href="/comprar-empresa.html">Ver outras empresas</a></div>';
+        return;
+      }
+
+      const s = PP.seg(a.segmento);
+      const c = PP.cidade(a.cidade);
+      const where = c.nome + '/' + c.uf;
+      const title = s.nome + ' à venda em ' + where;
+      const fotos = (a.fotos.length ? a.fotos : s.fotos.map(id => 'u:' + id));
+      const region = ['PR', 'SC', 'RS', 'SP', 'RJ', 'MG', 'ES'].includes(c.uf) ? 0 :
+        ['BA', 'SE', 'AL', 'PE', 'PB', 'RN', 'CE', 'PI', 'MA'].includes(c.uf) ? 1 : 2;
+      const consultor = PP.EQUIPE[region];
+      const waText = 'Olá! Tenho interesse no anúncio ' + a.codigo + ' (' + s.nome + ' em ' + where + ', ' + money(a.preco) + '). Pode me passar mais informações?';
+
+      PP.setMeta(title + ' · ' + money(a.preco) + ' · PassaPonto',
+        s.nome + ' à venda em ' + (a.bairro ? a.bairro + ', ' : '') + where + ' por ' + money(a.preco) + '. Faturamento médio de ' + money(a.faturamento) + '/mês, ' + a.funcionarios + ' funcionários. Código ' + a.codigo + '.');
+
+      // structured data
+      const pageUrl = location.origin + PP.anuncioUrl(a);
+      PP.jsonLd({
+        '@context': 'https://schema.org', '@type': 'Product',
+        name: title, sku: a.codigo, category: s.nome, description: a.descricao,
+        image: fotos.slice(0, 5).filter(f => !f.startsWith('data:')).map(f => photoUrl(f, 1200)),
+        offers: { '@type': 'Offer', price: a.preco, priceCurrency: 'BRL', availability: 'https://schema.org/InStock', url: pageUrl,
+          areaServed: { '@type': 'City', name: c.nome } }
+      });
+      PP.jsonLd({
+        '@context': 'https://schema.org', '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Início', item: location.origin + '/' },
+          { '@type': 'ListItem', position: 2, name: 'Comprar empresa', item: location.origin + '/comprar-empresa.html' },
+          { '@type': 'ListItem', position: 3, name: where, item: location.origin + PP.cidadeUrl(c.slug) },
+          { '@type': 'ListItem', position: 4, name: title, item: pageUrl }
+        ]
+      });
+
+      const item = (icon, label, value) => value === '' || value == null ? '' :
+        '<div class="data-item"><span class="di-icon">' + ic(icon) + '</span><div><small>' + label + '</small><strong>' + esc(value) + '</strong></div></div>';
+      const yn = v => v ? 'Sim' : 'Não';
+      const anos = new Date().getFullYear() - a.fundacao;
+
+      const gal = fotos.slice(0, 3);
+      const galleryHtml = '<div class="gallery' + (gal.length === 1 ? ' one' : '') + '">' +
+        gal.map((f, i) => '<button class="' + (i === 0 ? 'g-main' : '') + '" data-i="' + i + '" aria-label="Ver foto ' + (i + 1) + '"><img src="' + photoUrl(f, i === 0 ? 1200 : 700) + '" alt="' + esc(title) + ' foto ' + (i + 1) + '">' +
+          (i === 0 && a.fotoTipo === 'ilustrativas' ? '<span class="g-note">' + ic('info') + 'Fotos ilustrativas</span>' : '') +
+          (i === 2 && fotos.length > 3 ? '<span class="g-more">+' + (fotos.length - 3) + (fotos.length - 3 === 1 ? ' foto' : ' fotos') + '</span>' : '') + '</button>').join('') +
+        '</div>';
+
+      const similar = Store.anuncios().filter(x => x.id !== a.id && (x.segmento === a.segmento || x.cidade === a.cidade)).slice(0, 3);
+
+      main.innerHTML =
+        (preview && a.status !== 'publicado' ? '<div class="note warn" style="margin-top:20px">' + ic('eye') + '<span>Pré-visualização. Esse anúncio ainda não está publicado.</span></div>' : '') +
+        '<div class="detail-head">' +
+          '<ol class="breadcrumb dark"><li><a href="/index.html">Início</a></li><li><a href="/comprar-empresa.html">Comprar empresa</a></li><li><a href="' + PP.cidadeUrl(c.slug) + '">' + esc(where) + '</a></li><li>' + esc(s.nome) + '</li></ol>' +
+          '<div class="detail-title"><div>' +
+            '<div class="detail-meta"><span class="tag green">' + ic(s.icon) + esc(s.nome) + '</span><span class="tag">' + ic('hash') + 'Cód. ' + esc(a.codigo) + '</span><span class="tag">' + ic('calendar') + 'Publicado em ' + PP.dateBR(a.data) + '</span>' + (a.destaque ? '<span class="tag">' + ic('star') + 'Destaque</span>' : '') + '</div>' +
+            '<h1>' + esc(title) + '</h1>' +
+            '<div class="detail-meta">' + ic('map-pin') + esc((a.bairro ? a.bairro + ', ' : '') + where) + '</div>' +
+          '</div>' +
+          '<button class="btn btn-outline" id="share">' + ic('share-2') + 'Compartilhar</button></div>' +
+          galleryHtml +
+        '</div>' +
+
+        '<div class="detail-layout"><div>' +
+          '<section class="panel"><h2>' + ic('file-text') + 'Sobre o negócio</h2><p style="margin:0">' + esc(a.descricao) + '</p></section>' +
+          '<section class="panel"><h2>' + ic('building-2') + 'Estrutura e operação</h2><div class="data-grid">' +
+            item('calendar-check', 'Fundação', a.fundacao + ' (' + anos + (anos === 1 ? ' ano' : ' anos') + ')') +
+            item('users', 'Funcionários', a.funcionarios) +
+            item('ruler', 'Área', num(a.area) + ' m²') +
+            item('clock', 'Funcionamento', a.horario) +
+            item('file-badge', 'Venda com CNPJ', a.cnpj) +
+            item('badge-check', 'Marca inclusa', yn(a.marca)) +
+          '</div></section>' +
+          '<section class="panel"><h2>' + ic('bar-chart-3') + 'Números do negócio</h2><div class="data-grid">' +
+            item('trending-up', 'Faturamento médio/mês', money(a.faturamento)) +
+            item('percent', 'Margem de lucro', a.margem ? a.margem + '%' : 'A apurar') +
+            item('wallet', 'Folha de pagamento', money(a.folha)) +
+            item('home', 'Aluguel + condomínio', a.aluguel ? money(a.aluguel) : 'Imóvel próprio') +
+            item('package', 'Estoque atual', a.estoque ? money(a.estoque) : 'Sem estoque') +
+            item('tag', 'Valor pedido', money(a.preco)) +
+          '</div></section>' +
+          '<div class="note">' + ic('shield-check') + '<span><strong>Por que o nome da empresa não aparece?</strong><br>Pra proteger o vendedor, clientes e funcionários. O nome e o endereço são passados pela nossa equipe só pra compradores interessados de verdade.</span></div>' +
+        '</div>' +
+
+        '<aside><div class="side-card">' +
+          '<span class="price-label">Valor pedido</span><div class="price">' + money(a.preco) + '</div>' +
+          '<a class="btn btn-wa btn-lg" href="' + PP.whatsappUrl(waText) + '" target="_blank" rel="noopener">' + ic('message-circle') + 'Tenho interesse</a>' +
+          '<a class="btn btn-outline" href="/contato.html?anuncio=' + encodeURIComponent(a.codigo) + '">' + ic('mail') + 'Enviar mensagem</a>' +
+          '<ul class="side-list">' +
+            '<li><span>Código</span><strong>' + esc(a.codigo) + '</strong></li>' +
+            '<li><span>Segmento</span><strong>' + esc(s.nome) + '</strong></li>' +
+            '<li><span>Local</span><strong>' + esc((a.bairro ? a.bairro + ', ' : '') + where) + '</strong></li>' +
+            '<li><span>Faturamento/mês</span><strong>' + money(a.faturamento) + '</strong></li>' +
+          '</ul>' +
+          '<div class="consultant"><img class="avatar" src="' + photoUrl(consultor.foto, 120) + '" alt="' + esc(consultor.nome) + '"><div><strong>' + esc(consultor.nome) + '</strong><span>' + esc(consultor.cargo) + '</span></div></div>' +
+        '</div></aside></div>' +
+
+        (similar.length ? '<section style="padding-bottom:70px"><div class="section-head"><div><span class="kicker">Veja também</span><h2>Negócios parecidos</h2></div><a class="btn btn-outline" href="' + PP.cidadeUrl(c.slug) + '">Mais empresas em ' + esc(c.nome) + ' ' + ic('arrow-right') + '</a></div><div class="cards-grid">' + similar.map(PP.card).join('') + '</div></section>' : '');
+
+      // share
+      document.getElementById('share').addEventListener('click', async () => {
+        const url = location.origin + PP.anuncioUrl(a);
+        if (navigator.share) { try { await navigator.share({ title, url }); } catch (e) {} return; }
+        try { await navigator.clipboard.writeText(url); PP.toast('Link copiado'); } catch (e) { PP.toast(url); }
+      });
+
+      // lightbox
+      const lb = document.getElementById('lightbox'), lbImg = document.getElementById('lb-img');
+      let cur = 0;
+      function show(i) { cur = (i + fotos.length) % fotos.length; lbImg.src = photoUrl(fotos[cur], 1600); lbImg.alt = title + ' foto ' + (cur + 1); document.getElementById('lb-count').textContent = (cur + 1) + ' / ' + fotos.length; }
+      main.querySelectorAll('.gallery button').forEach(b => b.addEventListener('click', () => { show(Number(b.dataset.i)); lb.classList.add('open'); }));
+      document.getElementById('lb-close').onclick = () => lb.classList.remove('open');
+      document.getElementById('lb-prev').onclick = () => show(cur - 1);
+      document.getElementById('lb-next').onclick = () => show(cur + 1);
+      lb.addEventListener('click', e => { if (e.target === lb) lb.classList.remove('open'); });
+      document.addEventListener('keydown', e => {
+        if (!lb.classList.contains('open')) return;
+        if (e.key === 'Escape') lb.classList.remove('open');
+        if (e.key === 'ArrowLeft') show(cur - 1);
+        if (e.key === 'ArrowRight') show(cur + 1);
+      });
+
+      PP.icons();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cidades · Área da equipe</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="/assets/css/admin.css">
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+</head>
+<body class="admin" data-page="cidades" data-title="Cidades">
+  <div class="adm">
+    <aside id="adm-side"></aside>
+    <div class="adm-main">
+      <header id="adm-top"></header>
+      <main class="adm-content">
+        <div class="adm-grid" style="grid-template-columns:1fr 340px">
+          <div class="adm-card">
+            <div class="adm-toolbar">
+              <div class="tabs" id="tabs"></div>
+              <div class="input-icon"><i data-lucide="search"></i><input class="input" id="q" type="search" placeholder="Buscar cidade..."></div>
+            </div>
+            <table class="table">
+              <thead><tr><th>Cidade</th><th>Página no site</th><th>Anúncios</th><th>Status</th><th style="text-align:right">Ações</th></tr></thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+
+          <aside>
+            <form class="adm-panel" id="form" novalidate>
+              <h2><i data-lucide="plus-circle"></i>Adicionar cidade</h2>
+              <p class="muted" style="font-size:.88rem">A cidade ganha uma página própria no site e já aparece nos filtros e no cadastro.</p>
+              <div class="field"><label for="nome">Nome da cidade</label><input class="input" id="nome" placeholder="Ex.: Campinas"><span class="error" id="nome-err">Digite o nome da cidade.</span></div>
+              <div class="field"><label for="uf">Estado</label><select class="select" id="uf"><option value="">UF</option></select><span class="error">Escolha o estado.</span></div>
+              <div class="note info" style="margin-bottom:16px;font-size:.84rem"><i data-lucide="link"></i><span id="url-prev">O link da página aparece aqui.</span></div>
+              <button class="btn btn-primary btn-block" type="submit"><i data-lucide="plus"></i>Adicionar cidade</button>
+            </form>
+          </aside>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="/assets/js/data.js"></script>
+  <script src="/assets/js/app.js"></script>
+  <script src="/assets/js/admin.js"></script>
+  <script>
+    (function () {
+      const { Store, esc, ic } = PP;
+      const $ = id => document.getElementById(id);
+      let filtro = 'todas', q = '';
+      PP.UFS.forEach(u => $('uf').insertAdjacentHTML('beforeend', '<option>' + u + '</option>'));
+
+      function render() {
+        const anuncios = Store.anuncios({ all: true });
+        const all = Store.cidades();
+        $('tabs').innerHTML = [['todas', 'Todas (' + all.length + ')'], ['capitais', 'Capitais'], ['novas', 'Adicionadas (' + all.filter(c => !c.capital).length + ')']]
+          .map(([k, l]) => '<button data-f="' + k + '" class="' + (filtro === k ? 'active' : '') + '">' + l + '</button>').join('');
+        const term = PP.slugify(q);
+        const list = all.filter(c => (filtro === 'todas' || (filtro === 'capitais' ? c.capital : !c.capital)) && (!term || c.slug.includes(term)))
+          .slice().sort((a, b) => (a.capital === b.capital ? 0 : a.capital ? 1 : -1) || a.nome.localeCompare(b.nome));
+        $('rows').innerHTML = list.map(c => {
+          const n = anuncios.filter(a => a.cidade === c.slug).length;
+          return '<tr data-slug="' + c.slug + '">' +
+            '<td><span class="t-main">' + esc(c.nome) + '/' + c.uf + '</span><span class="t-sub">' + (c.capital ? 'Capital' : 'Adicionada pela equipe') + '</span></td>' +
+            '<td data-l="Página"><a href="' + PP.cidadeUrl(c.slug) + '" target="_blank" style="font-size:.85rem">/comprar-empresa/' + c.slug + '</a></td>' +
+            '<td data-l="Anúncios">' + n + '</td>' +
+            '<td>' + (c.ativa ? '<span class="status st-publicado">Ativa</span>' : '<span class="status st-pausado">Oculta</span>') + '</td>' +
+            '<td class="actions-cell"><button class="icon-btn" data-act="toggle" title="' + (c.ativa ? 'Ocultar' : 'Ativar') + '" aria-label="Ativar ou ocultar">' + ic(c.ativa ? 'eye-off' : 'eye') + '</button>' +
+            (c.capital ? '' : '<button class="icon-btn danger" data-act="del" title="Remover" aria-label="Remover">' + ic('trash-2') + '</button>') + '</td></tr>';
+        }).join('') || '<tr><td colspan="5"><div class="adm-empty">Nenhuma cidade.</div></td></tr>';
+        PP.icons();
+      }
+
+      function urlPrev() {
+        const n = $('nome').value.trim(), uf = $('uf').value;
+        $('url-prev').textContent = n && uf ? location.host + '/comprar-empresa/' + PP.slugify(n) + '-' + uf.toLowerCase() : 'O link da página aparece aqui.';
+      }
+      $('nome').addEventListener('input', urlPrev); $('uf').addEventListener('change', urlPrev);
+
+      $('form').addEventListener('submit', e => {
+        e.preventDefault();
+        const n = $('nome').value.trim(), uf = $('uf').value;
+        $('nome-err').textContent = 'Digite o nome da cidade.';
+        $('nome').closest('.field').classList.toggle('invalid', n.length < 2);
+        $('uf').closest('.field').classList.toggle('invalid', !uf);
+        if (n.length < 2 || !uf) return;
+        const r = Store.addCidade(n, uf);
+        if (r.error) { $('nome-err').textContent = r.error; $('nome').closest('.field').classList.add('invalid'); return; }
+        PP.toast(r.nome + '/' + r.uf + ' adicionada');
+        $('form').reset(); urlPrev(); filtro = 'novas'; render();
+      });
+
+      document.addEventListener('click', e => {
+        const f = e.target.closest('[data-f]'); if (f) { filtro = f.dataset.f; render(); return; }
+        const b = e.target.closest('[data-act]'); if (!b) return;
+        const slug = b.closest('tr').dataset.slug;
+        if (b.dataset.act === 'toggle') { const c = Store.toggleCidade(slug); PP.toast(c.nome + (c.ativa ? ' ativada' : ' oculta do site')); }
+        if (b.dataset.act === 'del') {
+          if (Store.anuncios({ all: true }).some(a => a.cidade === slug)) return PP.toast('Essa cidade tem anúncios. Oculte em vez de remover.', 'error');
+          if (!confirm('Remover essa cidade?')) return;
+          Store.removeCidade(slug); PP.toast('Cidade removida');
+        }
+        render();
+      });
+      $('q').addEventListener('input', e => { q = e.target.value; render(); });
+      render();
+    })();
+  </script>
+</body>
+</html>
