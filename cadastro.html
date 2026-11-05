@@ -296,7 +296,7 @@
         if (files.length > room) PP.toast('Máximo de ' + MAX_FOTOS + ' fotos. Algumas ficaram de fora.', 'error');
         for (const file of files.slice(0, room)) {
           const i = fotos.push(null) - 1; renderPhotos();
-          try { fotos[i] = await PP.resizeImage(file, 1000, 0.7); } catch (e) { fotos.splice(i, 1); }
+          try { fotos[i] = await PP.resizeImage(file, 900, 0.62); } catch (e) { fotos.splice(i, 1); }
           renderPhotos();
         }
         $('foto-field').classList.remove('invalid');
@@ -357,7 +357,6 @@
             '<li><span class="n">2</span><span>Em até 1 dia útil a gente te chama no WhatsApp ' + esc(c.responsavel.whatsapp) + '.</span></li>' +
             '<li><span class="n">3</span><span>Com tudo certo, seu anúncio vai pro ar sem o nome da empresa.</span></li>' +
           '</ol>' +
-          (c.fotosNaoSalvas ? '<div class="note warn" style="text-align:left;margin-bottom:20px">' + PP.ic('alert-triangle') + '<span>As fotos ficaram grandes demais pra este navegador. A equipe vai pedir pelo WhatsApp.</span></div>' : '') +
           '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
             '<a class="btn btn-primary" href="/comprar-empresa.html">Ver anúncios</a>' +
             '<a class="btn btn-outline" href="/admin/cadastro.html?id=' + c.id + '">' + PP.ic('layout-dashboard') + 'Ver como a equipe recebe</a>' +

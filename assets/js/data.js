@@ -252,6 +252,25 @@
     try { localStorage.setItem(DB_KEY, JSON.stringify(db)); return true; }
     catch (e) { return false; }
   }
+  // Browser storage is small (~5 MB). If it fills up, quietly drop uploaded
+  // photos from the oldest records first, then trim the current one.
+  const isUpload = f => typeof f === 'string' && f.indexOf('data:') === 0;
+  function persistFree(keep) {
+    if (persist()) return true;
+    const old = db.cadastros.concat(db.anuncios)
+      .filter(r => r !== keep && (r.fotos || []).some(isUpload))
+      .sort((a, b) => a.data - b.data);
+    for (const r of old) {
+      r.fotos = r.fotos.filter(f => !isUpload(f));
+      if (!r.fotos.length && r.codigo) r.fotos = segFotos(r.segmento);
+      if (persist()) return true;
+    }
+    while (keep && keep.fotos && keep.fotos.length > 1) {
+      keep.fotos.pop();
+      if (persist()) return true;
+    }
+    return persist();
+  }
 
   const Store = {
     reset() { try { localStorage.removeItem(DB_KEY); } catch (e) {} db = null; return load(); },
@@ -283,15 +302,14 @@
       const d = load();
       if (a.id) {
         const i = d.anuncios.findIndex(x => x.id === a.id);
-        d.anuncios[i] = Object.assign(d.anuncios[i], a);
+        a = d.anuncios[i] = Object.assign(d.anuncios[i], a);
       } else {
         a.id = d.seq.anuncio++;
         a.codigo = 'PP' + (d.seq.codigo++);
         a.data = Date.now();
         d.anuncios.push(a);
       }
-      const ok = persist();
-      return ok ? a : { error: 'Sem espaço no navegador para salvar as fotos. Tente com menos fotos.' };
+      return persistFree(a) ? a : { error: 'Não deu pra salvar. Tenta de novo.' };
     },
     removeAnuncio(id) { const d = load(); d.anuncios = d.anuncios.filter(a => a.id !== Number(id)); persist(); },
 
@@ -306,10 +324,7 @@
       c.status = 'novo';
       c.data = Date.now();
       d.cadastros.push(c);
-      if (!persist()) {
-        // sem espaço: guarda sem as fotos para não perder o cadastro
-        c.fotos = []; c.fotosNaoSalvas = true; persist();
-      }
+      persistFree(c);
       return c;
     },
     setCadastroStatus(id, status, extra) {

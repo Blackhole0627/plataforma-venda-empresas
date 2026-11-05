@@ -64,7 +64,7 @@
             '<section class="adm-panel"><h2>' + ic('images') + 'Fotos <span class="muted" style="font-weight:500;font-size:.88rem">(' + (c.fotoTipo === 'ilustrativas' ? 'pediu fotos ilustrativas' : c.fotos.length + ' enviadas') + ')</span></h2>' +
               (c.fotos.length ? '<div class="adm-photos">' + c.fotos.map((f, i) =>
                 '<a href="' + PP.photoUrl(f, 1600) + '" target="_blank" rel="noopener" download="' + esc(c.protocolo) + '-foto-' + (i + 1) + '.jpg"><img src="' + PP.photoUrl(f, 300) + '" alt="Foto ' + (i + 1) + '"><span class="dl">' + ic('download') + '</span></a>').join('') + '</div>'
-                : '<p class="muted" style="margin:0">' + (c.fotosNaoSalvas ? 'As fotos não couberam no navegador. Pedir pelo WhatsApp.' : 'Sem fotos. Usar fotos ilustrativas do segmento.') + '</p>') +
+                : '<p class="muted" style="margin:0">' + 'Sem fotos. Usar fotos ilustrativas do segmento.' + '</p>') +
             '</section>' +
           '</div>' +
 
