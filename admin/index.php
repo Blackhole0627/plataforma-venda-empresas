@@ -1,19 +1,7 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cadastros recebidos · Área da equipe</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/admin.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body class="admin" data-page="cadastros" data-title="Cadastros recebidos">
+<?php
+require dirname(__DIR__) . '/inc/bootstrap.php';
+admin_head('Cadastros recebidos', 'cadastros');
+?>
   <div class="adm">
     <aside id="adm-side"></aside>
     <div class="adm-main">
@@ -34,9 +22,7 @@
     </div>
   </div>
 
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <?php admin_scripts(['cadastros' => cadastros()]); ?>
   <script>
     (function () {
       const { Store, esc, money } = PP, A = PP.Admin;
@@ -65,7 +51,7 @@
             '<td data-l="Valor"><strong>' + money(c.preco) + '</strong></td>' +
             '<td data-l="Recebido"><span title="' + PP.dateBR(c.data) + '">' + PP.timeAgo(c.data) + '</span></td>' +
             '<td>' + A.statusPill(c.status) + '</td>' +
-            '<td class="actions-cell"><a class="btn btn-outline btn-sm" href="/admin/cadastro.html?id=' + c.id + '">Abrir</a></td>' +
+            '<td class="actions-cell"><a class="btn btn-outline btn-sm" href="/admin/cadastro?id=' + c.id + '">Abrir</a></td>' +
           '</tr>').join('') :
           '<tr><td colspan="8"><div class="adm-empty">' + PP.ic('inbox') + '<p>Nenhum cadastro aqui.</p></div></td></tr>';
         PP.icons();
@@ -75,7 +61,7 @@
         const b = e.target.closest('[data-s]');
         if (b) { filtro = (filtro === b.dataset.s && b.classList.contains('stat')) ? 'todos' : b.dataset.s; render(); return; }
         const tr = e.target.closest('tr[data-id]');
-        if (tr && !e.target.closest('a')) location.href = '/admin/cadastro.html?id=' + tr.dataset.id;
+        if (tr && !e.target.closest('a')) location.href = '/admin/cadastro?id=' + tr.dataset.id;
       });
       $('q').addEventListener('input', e => { q = e.target.value; render(); });
       render();

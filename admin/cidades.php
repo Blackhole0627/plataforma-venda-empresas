@@ -1,19 +1,7 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cidades · Área da equipe</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/admin.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body class="admin" data-page="cidades" data-title="Cidades">
+<?php
+require dirname(__DIR__) . '/inc/bootstrap.php';
+admin_head('Cidades', 'cidades');
+?>
   <div class="adm">
     <aside id="adm-side"></aside>
     <div class="adm-main">
@@ -46,18 +34,15 @@
     </div>
   </div>
 
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <?php admin_scripts(['contagem' => (object) array_column(db()->query('SELECT cidade, COUNT(*) n FROM anuncios GROUP BY cidade')->fetchAll(), 'n', 'cidade')]); ?>
   <script>
     (function () {
-      const { Store, esc, ic } = PP;
+      const { Store, esc, ic } = PP, A = PP.Admin;
       const $ = id => document.getElementById(id);
       let filtro = 'todas', q = '';
       PP.UFS.forEach(u => $('uf').insertAdjacentHTML('beforeend', '<option>' + u + '</option>'));
 
       function render() {
-        const anuncios = Store.anuncios({ all: true });
         const all = Store.cidades();
         $('tabs').innerHTML = [['todas', 'Todas (' + all.length + ')'], ['capitais', 'Capitais'], ['novas', 'Adicionadas (' + all.filter(c => !c.capital).length + ')']]
           .map(([k, l]) => '<button data-f="' + k + '" class="' + (filtro === k ? 'active' : '') + '">' + l + '</button>').join('');
@@ -65,7 +50,7 @@
         const list = all.filter(c => (filtro === 'todas' || (filtro === 'capitais' ? c.capital : !c.capital)) && (!term || c.slug.includes(term)))
           .slice().sort((a, b) => (a.capital === b.capital ? 0 : a.capital ? 1 : -1) || a.nome.localeCompare(b.nome));
         $('rows').innerHTML = list.map(c => {
-          const n = anuncios.filter(a => a.cidade === c.slug).length;
+          const n = Number(PP.BOOT.contagem[c.slug] || 0);
           return '<tr data-slug="' + c.slug + '">' +
             '<td><span class="t-main">' + esc(c.nome) + '/' + c.uf + '</span><span class="t-sub">' + (c.capital ? 'Capital' : 'Adicionada pela equipe') + '</span></td>' +
             '<td data-l="Página"><a href="' + PP.cidadeUrl(c.slug) + '" target="_blank" style="font-size:.85rem">/comprar-empresa/' + c.slug + '</a></td>' +
@@ -83,28 +68,32 @@
       }
       $('nome').addEventListener('input', urlPrev); $('uf').addEventListener('change', urlPrev);
 
-      $('form').addEventListener('submit', e => {
+      $('form').addEventListener('submit', async e => {
         e.preventDefault();
         const n = $('nome').value.trim(), uf = $('uf').value;
         $('nome-err').textContent = 'Digite o nome da cidade.';
         $('nome').closest('.field').classList.toggle('invalid', n.length < 2);
         $('uf').closest('.field').classList.toggle('invalid', !uf);
         if (n.length < 2 || !uf) return;
-        const r = Store.addCidade(n, uf);
-        if (r.error) { $('nome-err').textContent = r.error; $('nome').closest('.field').classList.add('invalid'); return; }
+        let r;
+        try { r = await Store.addCidade(n, uf); }
+        catch (err) { $('nome-err').textContent = err.message; $('nome').closest('.field').classList.add('invalid'); return; }
         PP.toast(r.nome + '/' + r.uf + ' adicionada');
         $('form').reset(); urlPrev(); filtro = 'novas'; render();
       });
 
-      document.addEventListener('click', e => {
+      document.addEventListener('click', async e => {
         const f = e.target.closest('[data-f]'); if (f) { filtro = f.dataset.f; render(); return; }
         const b = e.target.closest('[data-act]'); if (!b) return;
         const slug = b.closest('tr').dataset.slug;
-        if (b.dataset.act === 'toggle') { const c = Store.toggleCidade(slug); PP.toast(c.nome + (c.ativa ? ' ativada' : ' oculta do site')); }
+        if (b.dataset.act === 'toggle') {
+          const c = await A.busy(b, () => Store.toggleCidade(slug));
+          if (c) PP.toast(c.nome + (c.ativa ? ' ativada' : ' oculta do site'));
+        }
         if (b.dataset.act === 'del') {
-          if (Store.anuncios({ all: true }).some(a => a.cidade === slug)) return PP.toast('Essa cidade tem anúncios. Oculte em vez de remover.', 'error');
+          if (PP.BOOT.contagem[slug]) return PP.toast('Essa cidade tem anúncios. Oculte em vez de remover.', 'error');
           if (!confirm('Remover essa cidade?')) return;
-          Store.removeCidade(slug); PP.toast('Cidade removida');
+          if (await A.busy(b, () => Store.removeCidade(slug).then(() => true))) PP.toast('Cidade removida');
         }
         render();
       });

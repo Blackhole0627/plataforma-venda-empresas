@@ -1,25 +1,19 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Contato · PassaPonto</title>
-  <meta name="description" content="Fale com a equipe pelo WhatsApp, e-mail ou formulário. Atendimento de segunda a sexta.">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body data-page="contato">
-  <header id="site-header"></header>
+<?php
+require __DIR__ . '/inc/bootstrap.php';
+page_head([
+    'title' => 'Contato · ' . cfg('marca'),
+    'description' => 'Fale com a equipe pelo WhatsApp, e-mail ou formulário. Atendimento ' . cfg('horario') . '.',
+    'canonical' => '/contato',
+    'page' => 'contato',
+    'robots' => isset($_GET['anuncio']) ? 'noindex, follow' : null,
+]);
+site_header('contato');
+?>
 
   <main>
     <section class="page-head">
       <div class="container">
-        <ol class="breadcrumb"><li><a href="/index.html">Início</a></li><li>Contato</li></ol>
+        <ol class="breadcrumb"><li><a href="/">Início</a></li><li>Contato</li></ol>
         <h1>Fale com a gente</h1>
         <p>Quer comprar, vender ou tirar uma dúvida? Chama no WhatsApp ou manda uma mensagem.</p>
       </div>
@@ -44,48 +38,42 @@
                 <option>Outro assunto</option>
               </select></div>
           </div>
-          <div class="field"><label for="msg">Mensagem</label><textarea class="textarea" id="msg" placeholder="Escreva aqui"></textarea><span class="error">Escreva sua mensagem.</span></div>
+          <div class="field"><label for="msg">Mensagem</label><textarea class="textarea" id="msg" maxlength="3000" placeholder="Escreva aqui"></textarea>
+            <input type="text" id="site" name="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true"><span class="error">Escreva sua mensagem.</span></div>
           <button class="btn btn-primary btn-lg" type="submit"><i data-lucide="send"></i> Enviar mensagem</button>
         </form>
         <div class="success hidden" id="success">
           <div class="ok-icon"><i data-lucide="check"></i></div>
           <h2>Mensagem enviada!</h2>
           <p class="muted">Obrigado pelo contato. Logo a gente te responde.</p>
-          <a class="btn btn-primary" href="/comprar-empresa.html">Ver empresas à venda</a>
+          <a class="btn btn-primary" href="/comprar-empresa">Ver empresas à venda</a>
         </div>
       </div>
 
       <aside class="contact-cards">
-        <a class="contact-card" id="wa" target="_blank" rel="noopener"><span class="cc-icon wa"><i data-lucide="message-circle"></i></span><div><small>WhatsApp</small><strong id="wa-label"></strong></div></a>
-        <a class="contact-card" id="mail"><span class="cc-icon"><i data-lucide="mail"></i></span><div><small>E-mail</small><strong id="mail-label"></strong></div></a>
-        <div class="contact-card"><span class="cc-icon"><i data-lucide="clock"></i></span><div><small>Atendimento</small><strong>Seg a sex, 9h às 18h</strong></div></div>
+        <a class="contact-card" href="<?= h(whatsapp_url('Olá! Vim pela página de contato.')) ?>" target="_blank" rel="noopener"><span class="cc-icon wa"><i data-lucide="message-circle"></i></span><div><small>WhatsApp</small><strong><?= h(cfg('whatsapp_label')) ?></strong></div></a>
+        <a class="contact-card" href="mailto:<?= h(cfg('email')) ?>"><span class="cc-icon"><i data-lucide="mail"></i></span><div><small>E-mail</small><strong><?= h(cfg('email')) ?></strong></div></a>
+        <div class="contact-card"><span class="cc-icon"><i data-lucide="clock"></i></span><div><small>Atendimento</small><strong><?= h(cfg('horario')) ?></strong></div></div>
         <div class="contact-card" style="flex-direction:column;align-items:flex-start;gap:12px">
           <small class="muted" style="font-weight:600">Nossos consultores</small>
-          <div class="avatar-stack" id="avatars"></div>
+          <div class="avatar-stack"><?php foreach (equipe() as $p): ?><img src="<?= h(photo_url($p['foto'], 100)) ?>" alt="<?= h($p['nome']) ?>" title="<?= h($p['nome']) ?>"><?php endforeach; ?></div>
           <span class="muted" style="font-size:.9rem">Um consultor da sua região vai te atender.</span>
         </div>
       </aside>
     </div>
   </main>
 
-  <footer id="site-footer"></footer>
-
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
+  <?php site_footer(); page_scripts(); ?>
   <script>
     (function () {
-      const C = PP.CONFIG, $ = id => document.getElementById(id);
-      $('wa').href = PP.whatsappUrl('Olá! Vim pela página de contato.');
-      $('wa-label').textContent = C.whatsappLabel;
-      $('mail').href = 'mailto:' + C.email; $('mail-label').textContent = C.email;
-      $('avatars').innerHTML = PP.EQUIPE.map(p => '<img src="' + PP.photoUrl(p.foto, 100) + '" alt="' + PP.esc(p.nome) + '" title="' + PP.esc(p.nome) + '">').join('');
+      const $ = id => document.getElementById(id);
 
       const cod = PP.param('anuncio');
       if (cod) { $('assunto').value = 'Dúvida sobre um anúncio'; $('msg').value = 'Olá! Tenho interesse no anúncio ' + cod + '. '; }
 
       PP.bindMasks();
       const v = (id, ok) => { $(id).closest('.field').classList.toggle('invalid', !ok); return ok; };
-      $('form').addEventListener('submit', e => {
+      $('form').addEventListener('submit', async e => {
         e.preventDefault();
         const ok = [
           v('nome', $('nome').value.trim().length >= 2),
@@ -94,7 +82,13 @@
           v('msg', $('msg').value.trim().length >= 5)
         ].every(Boolean);
         if (!ok) return PP.toast('Confira os campos marcados', 'error');
-        $('form').classList.add('hidden'); $('success').classList.remove('hidden'); PP.icons();
+        const btn = $('form').querySelector('button[type=submit]');
+        btn.disabled = true;
+        try {
+          await PP.api('/api/contato', { nome: $('nome').value.trim(), whatsapp: $('tel').value.trim(), email: $('email').value.trim(),
+            assunto: $('assunto').value, mensagem: $('msg').value.trim(), anuncio: cod || '', site: $('site').value });
+          $('form').classList.add('hidden'); $('success').classList.remove('hidden'); PP.icons();
+        } catch (err) { PP.toast(err.message, 'error'); btn.disabled = false; }
       });
     })();
   </script>

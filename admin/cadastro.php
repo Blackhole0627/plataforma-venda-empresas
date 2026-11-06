@@ -1,19 +1,8 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cadastro · Área da equipe</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/admin.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body class="admin" data-page="cadastros" data-title="Cadastro recebido">
+<?php
+require dirname(__DIR__) . '/inc/bootstrap.php';
+$c = cadastro((int) ($_GET['id'] ?? 0));
+admin_head($c ? 'Cadastro ' . $c['protocolo'] : 'Cadastro', 'cadastros');
+?>
   <div class="adm">
     <aside id="adm-side"></aside>
     <div class="adm-main">
@@ -22,9 +11,7 @@
     </div>
   </div>
 
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <?php admin_scripts(['cadastro' => $c, 'anuncio' => ($c && $c['anuncioId']) ? anuncio($c['anuncioId']) : null]); ?>
   <script>
     (function () {
       const { Store, esc, money, ic } = PP, A = PP.Admin;
@@ -33,14 +20,14 @@
 
       function render() {
         const c = Store.cadastro(id);
-        if (!c) { $('content').innerHTML = '<div class="adm-empty">' + ic('search-x') + '<p>Cadastro não encontrado.</p><a class="btn btn-primary" href="/admin/index.html">Voltar</a></div>'; PP.icons(); return; }
+        if (!c) { $('content').innerHTML = '<div class="adm-empty">' + ic('search-x') + '<p>Cadastro não encontrado.</p><a class="btn btn-primary" href="/admin/">Voltar</a></div>'; PP.icons(); return; }
         const kv = (l, v, wide) => '<div' + (wide ? ' class="wide"' : '') + '><span>' + l + '</span><strong>' + esc(v === '' || v == null ? '-' : v) + '</strong></div>';
         const phone = c.responsavel.whatsapp.replace(/\D/g, '');
         const anuncio = c.anuncioId ? Store.anuncio(c.anuncioId) : null;
 
         $('content').innerHTML =
           '<div class="adm-head"><div>' +
-            '<a class="back" href="/admin/index.html">' + ic('arrow-left') + 'Cadastros</a>' +
+            '<a class="back" href="/admin/">' + ic('arrow-left') + 'Cadastros</a>' +
             '<h2>' + esc(c.empresa.nome) + '</h2>' +
             '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + A.statusPill(c.status) +
               '<span class="muted" style="font-size:.88rem">' + esc(c.protocolo) + ' · recebido em ' + new Date(c.data).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' }) + '</span></div>' +
@@ -72,9 +59,9 @@
             '<section class="adm-panel side-actions"><h2>' + ic('zap') + 'Próximo passo</h2>' +
               (anuncio
                 ? '<div class="note" style="margin-bottom:14px">' + ic('check-circle') + '<span>Anúncio <strong>' + esc(anuncio.codigo) + '</strong> criado a partir deste cadastro.</span></div>' +
-                  '<a class="btn btn-primary" href="/admin/anuncio-editar.html?id=' + anuncio.id + '">' + ic('pencil') + 'Editar anúncio</a>' +
-                  '<a class="btn btn-outline" href="' + PP.anuncioUrl(anuncio) + (anuncio.status === 'publicado' ? '' : (PP.PRETTY ? '?' : '&') + 'preview=1') + '" target="_blank">' + ic('external-link') + 'Ver no site</a>'
-                : (c.status !== 'recusado' ? '<a class="btn btn-primary" href="/admin/anuncio-editar.html?from=' + c.id + '">' + ic('megaphone') + 'Criar anúncio com esses dados</a>' : '') +
+                  '<a class="btn btn-primary" href="/admin/anuncio-editar?id=' + anuncio.id + '">' + ic('pencil') + 'Editar anúncio</a>' +
+                  '<a class="btn btn-outline" href="' + PP.anuncioUrl(anuncio) + (anuncio.status === 'publicado' ? '' : '?preview=1') + '" target="_blank">' + ic('external-link') + 'Ver no site</a>'
+                : (c.status !== 'recusado' ? '<a class="btn btn-primary" href="/admin/anuncio-editar?from=' + c.id + '">' + ic('megaphone') + 'Criar anúncio com esses dados</a>' : '') +
                   (c.status === 'novo' ? '<button class="btn btn-outline" data-st="analise">' + ic('search-check') + 'Marcar em análise</button>' : '') +
                   (c.status !== 'recusado' ? '<button class="btn btn-danger" data-st="recusado">' + ic('x-circle') + 'Recusar</button>' : '<button class="btn btn-outline" data-st="analise">' + ic('rotate-ccw') + 'Voltar pra análise</button>')) +
             '</section>' +
@@ -95,12 +82,11 @@
         $('copy').onclick = async () => {
           try { await navigator.clipboard.writeText(A.cadastroTexto(c)); PP.toast('Dados copiados'); } catch (e) { PP.toast('Não deu pra copiar', 'error'); }
         };
-        document.querySelectorAll('[data-st]').forEach(b => b.onclick = () => {
+        document.querySelectorAll('[data-st]').forEach(b => b.onclick = async () => {
           const st = b.dataset.st;
           if (st === 'recusado' && !confirm('Recusar esse cadastro?')) return;
-          Store.setCadastroStatus(c.id, st, st === 'analise' ? { analiseEm: Date.now() } : {});
-          PP.toast('Status atualizado: ' + A.STATUS[st].label);
-          render();
+          const r = await A.busy(b, () => Store.setCadastroStatus(c.id, st));
+          if (r) { PP.toast('Status atualizado: ' + A.STATUS[st].label); render(); }
         });
       }
       document.addEventListener('DOMContentLoaded', render);

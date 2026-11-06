@@ -1,27 +1,84 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Empresas à venda · PassaPonto</title>
-  <meta name="description" content="Veja empresas à venda por cidade, segmento e faixa de valor. Academias, restaurantes, farmácias, mercados e muito mais.">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body data-page="comprar">
-  <header id="site-header"></header>
+<?php
+require __DIR__ . '/inc/bootstrap.php';
 
+const MAXV = 3500000;
+const PER_PAGE = 9;
+
+/* /comprar-empresa?cidade=x  ->  /comprar-empresa/x */
+if (!empty($_GET['cidade']) && empty($_GET['cidade_path'])) {
+    $qs = $_GET;
+    $c = (string) $qs['cidade'];
+    unset($qs['cidade']);
+    redirect(cidade_url(slugify($c)) . ($qs ? '?' . http_build_query($qs) : ''), 301);
+}
+$cidadeSlug = (string) ($_GET['cidade_path'] ?? '');
+$cid = null;
+if ($cidadeSlug !== '') {
+    $cid = cidade($cidadeSlug);
+    if (!$cid || !$cid['ativa']) not_found();
+}
+
+$all = anuncios_publicados();
+$segs = array_values(array_filter(explode(',', (string) ($_GET['segmento'] ?? '')), 'seg_exists'));
+$min = max(0, (int) ($_GET['min'] ?? 0));
+$max = (int) ($_GET['max'] ?? 0) ?: MAXV;
+$ordem = (string) ($_GET['ordem'] ?? 'recentes');
+$page = max(1, (int) ($_GET['pagina'] ?? 1));
+$q = trim((string) ($_GET['q'] ?? ''));
+$qn = str_replace('-', ' ', slugify($q));
+
+$list = array_values(array_filter($all, function ($a) use ($cidadeSlug, $segs, $min, $max, $qn) {
+    if ($cidadeSlug && $a['cidade'] !== $cidadeSlug) return false;
+    if ($segs && !in_array($a['segmento'], $segs, true)) return false;
+    if ($a['preco'] < $min || ($max < MAXV && $a['preco'] > $max)) return false;
+    if ($qn !== '') {
+        $hay = str_replace('-', ' ', slugify(implode(' ', [$a['codigo'], $a['bairro'], seg($a['segmento'])['nome'], cidade_label($a['cidade']), $a['descricao']])));
+        if (!str_contains($hay, $qn)) return false;
+    }
+    return true;
+}));
+$sorters = [
+    'menor' => fn($x, $y) => $x['preco'] <=> $y['preco'],
+    'maior' => fn($x, $y) => $y['preco'] <=> $x['preco'],
+    'faturamento' => fn($x, $y) => $y['faturamento'] <=> $x['faturamento'],
+    'recentes' => fn($x, $y) => $y['data'] <=> $x['data'],
+];
+usort($list, $sorters[$ordem] ?? $sorters['recentes']);
+$pages = max(1, (int) ceil(count($list) / PER_PAGE));
+$page = min($page, $pages);
+$slice = array_slice($list, ($page - 1) * PER_PAGE, PER_PAGE);
+
+$s1 = count($segs) === 1 ? seg($segs[0]) : null;
+$where = $cid ? ' em ' . $cid['nome'] . '/' . $cid['uf'] : '';
+$titulo = ($s1 ? $s1['nome'] : 'Empresas') . ' à venda' . $where;
+$sub = $cid ? 'Negócios à venda' . $where . ' com faturamento, estrutura e valores. O nome das empresas fica em sigilo.'
+    : 'Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.';
+$filtrado = $q !== '' || $page > 1 || count($segs) > 1 || $min || $max < MAXV;
+$canonical = ($cid ? cidade_url($cid['slug']) : '/comprar-empresa') . ($s1 ? '?segmento=' . $s1['slug'] : '');
+
+$crumbs = [['Início', '/'], ['Comprar empresa', '/comprar-empresa']];
+if ($cid) $crumbs[] = [$cid['nome'] . '/' . $cid['uf'], cidade_url($cid['slug'])];
+$ld = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => []];
+foreach ($crumbs as $i => [$n, $u]) $ld['itemListElement'][] = ['@type' => 'ListItem', 'position' => $i + 1, 'name' => $n, 'item' => site_url($u)];
+$itemList = ['@context' => 'https://schema.org', '@type' => 'ItemList',
+    'itemListElement' => array_map(fn($a, $i) => ['@type' => 'ListItem', 'position' => $i + 1, 'url' => site_url(anuncio_url($a))], $slice, array_keys($slice))];
+
+page_head([
+    'title' => $titulo . ' · ' . cfg('marca'),
+    'description' => ($s1 ? $s1['nome'] . ' à venda' : 'Empresas à venda') . $where . '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.',
+    'canonical' => $canonical,
+    'page' => 'comprar',
+    'robots' => $filtrado ? 'noindex, follow' : null,
+    'jsonld' => [$ld, $itemList],
+]);
+site_header('comprar');
+?>
   <main>
     <section class="page-head">
       <div class="container">
-        <ol class="breadcrumb" id="crumbs"></ol>
-        <h1 id="page-title">Empresas à venda</h1>
-        <p id="page-sub">Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.</p>
+        <ol class="breadcrumb" id="crumbs"><li><a href="/">Início</a></li><li><a href="/comprar-empresa">Comprar empresa</a></li><?php if ($cid): ?><li><?= h($cid['nome'] . '/' . $cid['uf']) ?></li><?php endif; ?></ol>
+        <h1 id="page-title"><?= h($titulo) ?></h1>
+        <p id="page-sub"><?= h($sub) ?></p>
       </div>
     </section>
 
@@ -68,7 +125,7 @@
       <!-- RESULTS -->
       <section>
         <div class="list-toolbar">
-          <span class="count" id="count"></span>
+          <span class="count" id="count">Exibindo <strong><?= count($list) ?></strong> <?= count($list) === 1 ? 'empresa' : 'empresas' ?></span>
           <div style="display:flex;gap:10px">
             <button class="btn btn-outline btn-sm filters-open" id="filters-open"><i data-lucide="sliders-horizontal"></i> Filtros</button>
             <select class="select" id="f-ordem" aria-label="Ordenar">
@@ -80,17 +137,14 @@
           </div>
         </div>
         <div class="active-filters" id="active-filters"></div>
-        <div class="cards-grid" id="results"></div>
-        <nav class="pagination" id="pagination" aria-label="Páginas"></nav>
+        <div class="cards-grid" id="results"><?= implode('', array_map('card', $slice)) ?></div>
+        <nav class="pagination" id="pagination" aria-label="Páginas"><?php if ($pages > 1) for ($i = 1; $i <= $pages; $i++): $qs = $_GET; unset($qs['cidade_path']); $qs['pagina'] = $i; ?><a href="?<?= h(http_build_query($qs)) ?>"<?= $i === $page ? ' class="active"' : '' ?>><?= $i ?></a><?php endfor; ?></nav>
         <div class="seo-text" id="seo-text"></div>
       </section>
     </div>
   </main>
 
-  <footer id="site-footer"></footer>
-
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
+<?php site_footer(); page_scripts(['anuncios' => $all]); ?>
   <script>
     (function () {
       const { Store, SEGMENTOS, esc, money } = PP;
@@ -164,9 +218,8 @@
         if (state.max < MAXV) p.set('max', state.max);
         if (state.ordem !== 'recentes') p.set('ordem', state.ordem);
         if (state.page > 1) p.set('pagina', state.page);
-        let base = location.pathname;
-        if (pathCity && state.cidade !== pathCity) base = '/comprar-empresa.html';
-        if (pathCity && state.cidade === pathCity) p.delete('cidade');
+        p.delete('cidade');
+        const base = state.cidade ? PP.cidadeUrl(state.cidade) : '/comprar-empresa';
         history.replaceState(null, '', base + (p.toString() ? '?' + p : ''));
       }
 
@@ -180,10 +233,10 @@
         $('page-sub').textContent = c
           ? 'Negócios à venda' + where + ' com faturamento, estrutura e valores. O nome das empresas fica em sigilo.'
           : 'Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.';
-        PP.setMeta(title + ' · PassaPonto',
+        PP.setMeta(title + ' · ' + PP.CONFIG.marca,
           (s ? s.nome + ' à venda' : 'Empresas à venda') + where + '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.');
 
-        let crumbs = '<li><a href="/index.html">Início</a></li><li><a href="/comprar-empresa.html">Comprar empresa</a></li>';
+        let crumbs = '<li><a href="/">Início</a></li><li><a href="/comprar-empresa">Comprar empresa</a></li>';
         if (c) crumbs += '<li>' + esc(c.nome) + '/' + c.uf + '</li>';
         $('crumbs').innerHTML = crumbs;
 

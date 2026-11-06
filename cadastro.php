@@ -1,25 +1,20 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cadastrar empresa para venda · PassaPonto</title>
-  <meta name="description" content="Cadastre sua empresa para venda. Grátis, rápido e com sigilo.">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body data-page="cadastro">
-  <header id="site-header"></header>
+<?php
+require __DIR__ . '/inc/bootstrap.php';
+$analista = null;
+foreach (equipe() as $p) if (!empty($p['cadastros'])) $analista = $p;
+page_head([
+    'title' => 'Cadastrar empresa para venda · ' . cfg('marca'),
+    'description' => 'Cadastre sua empresa para venda. Rápido e com sigilo: o nome do negócio não aparece no anúncio.',
+    'canonical' => '/cadastro',
+    'page' => 'cadastro',
+]);
+site_header('cadastro');
+?>
 
   <main>
     <section class="page-head">
       <div class="container">
-        <ol class="breadcrumb"><li><a href="/index.html">Início</a></li><li><a href="/vender-empresa.html">Vender empresa</a></li><li>Cadastro</li></ol>
+        <ol class="breadcrumb"><li><a href="/">Início</a></li><li><a href="/vender-empresa">Vender empresa</a></li><li>Cadastro</li></ol>
         <h1>Cadastre sua empresa</h1>
         <p>Preencha os dados abaixo. A nossa equipe analisa e entra em contato pra montar o anúncio. Leva uns 5 minutos.</p>
       </div>
@@ -168,6 +163,7 @@
             </div>
           </div>
 
+          <input type="text" name="site" id="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
           <div class="form-actions" id="actions">
             <button type="button" class="btn btn-ghost" id="prev"><i data-lucide="arrow-left"></i> Voltar</button>
             <button type="button" class="btn btn-primary" id="next">Continuar <i data-lucide="arrow-right"></i></button>
@@ -183,17 +179,14 @@
           <li><i data-lucide="lock"></i><span>O nome da empresa não aparece no anúncio.</span></li>
           <li><i data-lucide="user-check"></i><span>A equipe revisa tudo antes de publicar.</span></li>
           <li><i data-lucide="phone-call"></i><span>A gente te chama no WhatsApp em até 1 dia útil.</span></li>
-          <li><i data-lucide="badge-check"></i><span>Cadastro grátis e sem compromisso.</span></li>
+          <li><i data-lucide="badge-check"></i><span>Cadastro sem compromisso.</span></li>
         </ul>
-        <div class="consultant" id="aside-consultant"></div>
+        <?php if ($analista): ?><div class="consultant"><img class="avatar" src="<?= h(photo_url($analista['foto'], 120)) ?>" alt="<?= h($analista['nome']) ?>"><div><strong><?= h($analista['nome']) ?></strong><span>Vai analisar seu cadastro</span></div></div><?php endif; ?>
       </aside>
     </div>
   </main>
 
-  <footer id="site-footer"></footer>
-
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
+  <?php site_footer(); page_scripts(); ?>
   <script>
     (function () {
       const { Store, SEGMENTOS, esc } = PP;
@@ -205,13 +198,11 @@
 
       // selects
       SEGMENTOS.forEach(s => $('segmento').insertAdjacentHTML('beforeend', '<option value="' + s.slug + '">' + esc(s.nome) + '</option>'));
-      Store.cidades(true).slice().sort((a, b) => a.nome.localeCompare(b.nome)).forEach(c =>
+      Store.cidades(true).forEach(c =>
         $('cidade').insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
       $('cidade').insertAdjacentHTML('beforeend', '<option value="outra">Minha cidade não está na lista</option>');
       $('cidade').addEventListener('change', () => $('outra-wrap').classList.toggle('hidden', $('cidade').value !== 'outra'));
 
-      const ct = PP.EQUIPE[3];
-      $('aside-consultant').innerHTML = '<img class="avatar" src="' + PP.photoUrl(ct.foto, 120) + '" alt="' + esc(ct.nome) + '"><div><strong>' + esc(ct.nome) + '</strong><span>Vai analisar seu cadastro</span></div>';
 
       $('descricao').addEventListener('input', () => { $('desc-count').textContent = $('descricao').value.length; });
       PP.bindMasks(form);
@@ -343,9 +334,24 @@
           row('Cidade', d.cidade ? PP.cidadeLabel(d.cidade) : d.cidadeOutra) + row('Bairro', d.bairro) +
           row('Valor pedido', PP.money(d.preco)) + row('Faturamento/mês', PP.money(d.faturamento));
       }
-      function submit() {
-        $('next').disabled = true;
-        const c = Store.addCadastro(data());
+      async function submit() {
+        const btn = $('next');
+        btn.disabled = true; $('prev').disabled = true;
+        btn.innerHTML = PP.ic('loader') + ' Enviando...'; PP.icons();
+        const d = data();
+        const fd = new FormData();
+        fd.append('dados', JSON.stringify(Object.assign({}, d, { fotos: undefined })));
+        fd.append('site', $('site').value);
+        d.fotos.forEach((f, i) => fd.append('fotos[]', PP.dataUrlToBlob(f), 'foto-' + (i + 1) + '.jpg'));
+        let c;
+        try {
+          c = (await PP.api('/api/cadastro', fd)).cadastro;
+        } catch (err) {
+          PP.toast(err.message, 'error');
+          btn.disabled = false; $('prev').disabled = false;
+          btn.innerHTML = PP.ic('send') + ' Enviar cadastro'; PP.icons();
+          return;
+        }
         form.classList.add('hidden');
         $('success').classList.remove('hidden');
         $('success').innerHTML =
@@ -358,8 +364,8 @@
             '<li><span class="n">3</span><span>Com tudo certo, seu anúncio vai pro ar sem o nome da empresa.</span></li>' +
           '</ol>' +
           '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">' +
-            '<a class="btn btn-primary" href="/comprar-empresa.html">Ver anúncios</a>' +
-            '<a class="btn btn-outline" href="/admin/cadastro.html?id=' + c.id + '">' + PP.ic('layout-dashboard') + 'Ver como a equipe recebe</a>' +
+            '<a class="btn btn-primary" href="/comprar-empresa">Ver anúncios</a>' +
+            '<a class="btn btn-outline" href="/">Voltar pro início</a>' +
           '</div>';
         PP.icons();
         window.scrollTo({ top: 0, behavior: 'smooth' });

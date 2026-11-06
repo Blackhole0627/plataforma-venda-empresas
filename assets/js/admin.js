@@ -1,21 +1,11 @@
 /* ==========================================================================
-   Área interna: login, sidebar, topbar, status helpers
-   (front-end only for now, the real login will be PHP session + password_hash)
+   Área interna: sidebar, topbar, status helpers.
+   Login is checked by PHP before the page is sent.
    ========================================================================== */
 
 (function () {
   'use strict';
-  const PP = window.PP;
-  const AUTH_KEY = 'pp_admin_session';
-
-  function getSession() { try { return JSON.parse(localStorage.getItem(AUTH_KEY)); } catch (e) { return null; } }
-  function login(email) { try { localStorage.setItem(AUTH_KEY, JSON.stringify({ email, at: Date.now() })); } catch (e) {} }
-  function logout() { try { localStorage.removeItem(AUTH_KEY); } catch (e) {} location.href = '/admin/login.html'; }
-
-  const isLogin = /\/admin\/login(\.html)?$/.test(location.pathname);
-  if (!isLogin && !getSession()) {
-    location.replace('/admin/login.html?next=' + encodeURIComponent(location.pathname + location.search));
-  }
+  const PP = window.PP, B = PP.BOOT;
 
   const STATUS = {
     novo: { label: 'Novo', icon: 'inbox' },
@@ -27,41 +17,40 @@
   };
   function statusPill(s) { return '<span class="status st-' + s + '">' + (STATUS[s] ? STATUS[s].label : s) + '</span>'; }
 
+  function initials(n) { return String(n || '?').trim().split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase(); }
+
   function shell() {
     const side = document.getElementById('adm-side');
     const top = document.getElementById('adm-top');
     if (!side || !top) return;
     const page = document.body.dataset.page;
-    const novos = PP.Store.cadastros().filter(c => c.status === 'novo').length;
-    const user = PP.EQUIPE[3];
+    const novos = B.novos || 0;
+    const user = B.user || { nome: '' };
     const link = (href, icon, label, key, extra) =>
       '<a href="' + href + '" class="' + (page === key ? 'active' : '') + '">' + PP.ic(icon) + label + (extra || '') + '</a>';
 
     side.className = 'adm-side';
     side.innerHTML = PP.logo(true) +
       '<div class="side-label">Gestão</div><nav class="adm-nav">' +
-        link('/admin/index.html', 'inbox', 'Cadastros recebidos', 'cadastros', novos ? '<span class="count">' + novos + '</span>' : '') +
-        link('/admin/anuncios.html', 'megaphone', 'Anúncios', 'anuncios') +
-        link('/admin/cidades.html', 'map-pin', 'Cidades', 'cidades') +
+        link('/admin/', 'inbox', 'Cadastros recebidos', 'cadastros', novos ? '<span class="count">' + novos + '</span>' : '') +
+        link('/admin/anuncios', 'megaphone', 'Anúncios', 'anuncios') +
+        link('/admin/cidades', 'map-pin', 'Cidades', 'cidades') +
+        link('/admin/mensagens', 'mail', 'Mensagens do site', 'mensagens') +
       '</nav>' +
       '<div class="side-bottom">' +
         '<div class="side-help"><strong>Como funciona</strong>O cadastro chega aqui, a equipe confere, cria o anúncio e publica no site.</div>' +
         '<nav class="adm-nav">' +
-          '<a href="/index.html" target="_blank">' + PP.ic('external-link') + 'Ver site</a>' +
-          '<button id="reset-demo">' + PP.ic('rotate-ccw') + 'Restaurar dados de exemplo</button>' +
-          '<button id="logout">' + PP.ic('log-out') + 'Sair</button>' +
+          link('/admin/conta', 'user-cog', 'Equipe e senha', 'conta') +
+          '<a href="/" target="_blank">' + PP.ic('external-link') + 'Ver site</a>' +
+          '<a href="/admin/logout?t=' + encodeURIComponent(B.csrf || '') + '">' + PP.ic('log-out') + 'Sair</a>' +
         '</nav>' +
       '</div>';
 
     top.className = 'adm-top';
     top.innerHTML =
-      '<div style="display:flex;align-items:center;gap:10px"><button class="adm-menu" id="adm-menu" aria-label="Menu">' + PP.ic('menu') + '</button><h1>' + (document.body.dataset.title || '') + '</h1></div>' +
-      '<div class="adm-user"><div style="text-align:right"><strong>' + PP.esc(user.nome) + '</strong><span>Equipe</span></div><img src="' + PP.photoUrl(user.foto, 100) + '" alt="' + PP.esc(user.nome) + '"></div>';
+      '<div style="display:flex;align-items:center;gap:10px"><button class="adm-menu" id="adm-menu" aria-label="Menu">' + PP.ic('menu') + '</button><h1>' + PP.esc(document.body.dataset.title || '') + '</h1></div>' +
+      '<div class="adm-user"><div style="text-align:right"><strong>' + PP.esc(user.nome) + '</strong><span>' + PP.esc(user.email || 'Equipe') + '</span></div><span class="adm-initials">' + PP.esc(initials(user.nome)) + '</span></div>';
 
-    document.getElementById('logout').onclick = logout;
-    document.getElementById('reset-demo').onclick = () => {
-      if (confirm('Restaurar os dados de exemplo? Os cadastros e anúncios criados neste navegador serão apagados.')) { PP.Store.reset(); location.reload(); }
-    };
     document.getElementById('adm-menu').onclick = e => { e.stopPropagation(); document.body.classList.toggle('side-open'); };
     document.addEventListener('click', e => { if (document.body.classList.contains('side-open') && !e.target.closest('.adm-side')) document.body.classList.remove('side-open'); });
   }
@@ -86,6 +75,14 @@
     ].join('\n');
   }
 
-  Object.assign(PP, { Admin: { login, logout, getSession, STATUS, statusPill, cadastroTexto } });
+  /* runs an async action with the button disabled; shows the error as a toast */
+  async function busy(btn, fn) {
+    if (btn) btn.disabled = true;
+    try { return await fn(); }
+    catch (e) { PP.toast(e.message, 'error'); return null; }
+    finally { if (btn) btn.disabled = false; }
+  }
+
+  Object.assign(PP, { Admin: { STATUS, statusPill, cadastroTexto, busy } });
   document.addEventListener('DOMContentLoaded', () => { shell(); PP.icons(); });
 })();

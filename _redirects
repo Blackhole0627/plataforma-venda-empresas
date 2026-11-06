@@ -1,3 +1,0 @@
-# Friendly URLs (SEO). The real PHP version will do the same with .htaccess.
-/empresa-a-venda/*    /anuncio.html          200
-/comprar-empresa/*    /comprar-empresa.html  200

@@ -1,31 +1,33 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vender empresa com sigilo · PassaPonto</title>
-  <meta name="description" content="Quer vender sua empresa? Anuncie com sigilo, sem expor o nome do negócio, e receba só contatos de compradores filtrados pela nossa equipe.">
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body data-page="vender">
-  <header id="site-header"></header>
+<?php
+require __DIR__ . '/inc/bootstrap.php';
+const FAQ = [
+    ['Quanto custa anunciar?', 'O cadastro é grátis. Depois da análise, a equipe te passa as condições do anúncio antes de publicar.'],
+    ['O nome da minha empresa vai aparecer no site?', 'Não. O anúncio mostra o segmento, o bairro, a cidade e os números. O nome só é passado pra compradores aprovados pela equipe.'],
+    ['Quanto tempo leva pra publicar?', 'Depois do cadastro, a equipe entra em contato em até 1 dia útil. Com tudo certo, o anúncio vai pro ar no mesmo dia.'],
+    ['Quantas fotos posso mandar?', 'Até 15 fotos. Se preferir, a gente usa fotos ilustrativas do seu segmento.'],
+    ['Vocês ajudam a definir o preço?', 'Sim. Se você não tiver certeza do valor, a equipe conversa com você com base no faturamento e na estrutura do negócio.'],
+];
+page_head([
+    'title' => 'Vender empresa com sigilo · ' . cfg('marca'),
+    'description' => 'Quer vender sua empresa? Anuncie com sigilo, sem expor o nome do negócio, e receba só contatos de compradores filtrados pela nossa equipe.',
+    'canonical' => '/vender-empresa',
+    'image' => photo_url(IMAGENS['heroVender'], 1200),
+    'page' => 'vender',
+    'jsonld' => [['@context' => 'https://schema.org', '@type' => 'FAQPage', 'mainEntity' => array_map(fn($q) => ['@type' => 'Question', 'name' => $q[0], 'acceptedAnswer' => ['@type' => 'Answer', 'text' => $q[1]]], FAQ)]],
+]);
+site_header('vender');
+?>
 
   <main>
     <section class="hero">
-      <div class="hero-bg" id="hero-bg"></div>
+      <div class="hero-bg" style="background-image:url('<?= photo_url(IMAGENS['heroVender'], 1800) ?>')"></div>
       <div class="container hero-inner">
         <span class="eyebrow"><i data-lucide="lock"></i> Venda com sigilo total</span>
         <h1>Venda sua empresa <em>sem expor o seu negócio</em></h1>
         <p class="lead">Seu anúncio vai pro ar sem o nome da empresa. A nossa equipe filtra os interessados e só passa pra você quem tem perfil e dinheiro pra comprar.</p>
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <a class="btn btn-accent btn-lg" href="/cadastro.html">Cadastrar minha empresa <i data-lucide="arrow-right"></i></a>
-          <a class="btn btn-wa btn-lg" id="hero-wa" target="_blank" rel="noopener"><i data-lucide="message-circle"></i> Tirar dúvidas</a>
+          <a class="btn btn-accent btn-lg" href="/cadastro">Cadastrar minha empresa <i data-lucide="arrow-right"></i></a>
+          <a class="btn btn-wa btn-lg" href="<?= h(whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúvidas.')) ?>" target="_blank" rel="noopener"><i data-lucide="message-circle"></i> Tirar dúvidas</a>
         </div>
       </div>
     </section>
@@ -59,9 +61,9 @@
             <li><span class="n"><i data-lucide="check" style="width:15px;height:15px"></i></span><span>Visitas só com compradores aprovados</span></li>
             <li><span class="n"><i data-lucide="check" style="width:15px;height:15px"></i></span><span>Atendimento direto pelo WhatsApp</span></li>
           </ul>
-          <a class="btn btn-primary btn-lg" href="/cadastro.html">Começar cadastro</a>
+          <a class="btn btn-primary btn-lg" href="/cadastro">Começar cadastro</a>
         </div>
-        <img class="rounded" id="split-img" alt="Reunião de negociação de venda de empresa" loading="lazy">
+        <img class="rounded" src="<?= photo_url(IMAGENS['sigilo'], 900) ?>" alt="Reunião de negociação de venda de empresa" loading="lazy">
       </div>
     </section>
 
@@ -72,8 +74,8 @@
           <h2>Você escolhe como seu negócio aparece</h2>
         </div>
         <div class="photo-options">
-          <div class="photo-opt"><img id="po-real" alt="Exemplo com fotos reais" loading="lazy"><div class="po-body"><h3>Fotos reais</h3><p class="muted" style="margin:0">Mostra o espaço de verdade e atrai mais interessados. Pode mandar até 15 fotos, de preferência bem iluminadas e sem fachada.</p></div></div>
-          <div class="photo-opt"><img id="po-ilus" alt="Exemplo com fotos ilustrativas" loading="lazy"><div class="po-body"><h3>Fotos ilustrativas</h3><p class="muted" style="margin:0">Usamos imagens do segmento. Ninguém reconhece o local e o sigilo fica total.</p></div></div>
+          <div class="photo-opt"><img src="<?= photo_url(IMAGENS['fotoReal'], 800) ?>" alt="Exemplo com fotos reais" loading="lazy"><div class="po-body"><h3>Fotos reais</h3><p class="muted" style="margin:0">Mostra o espaço de verdade e atrai mais interessados. Pode mandar até 15 fotos, de preferência bem iluminadas e sem fachada.</p></div></div>
+          <div class="photo-opt"><img src="<?= photo_url(IMAGENS['fotoIlus'], 800) ?>" alt="Exemplo com fotos ilustrativas" loading="lazy"><div class="po-body"><h3>Fotos ilustrativas</h3><p class="muted" style="margin:0">Usamos imagens do segmento. Ninguém reconhece o local e o sigilo fica total.</p></div></div>
         </div>
       </div>
     </section>
@@ -97,28 +99,14 @@
     <section class="section">
       <div class="container">
         <div class="cta-band">
-          <div class="bg" id="cta-bg"></div>
+          <div class="bg" style="background-image:url('<?= photo_url(IMAGENS['ctaVender'], 1400) ?>')"></div>
           <div><h2>Pronto pra vender?</h2><p>O cadastro leva uns 5 minutos e é grátis.</p></div>
-          <div class="actions"><a class="btn btn-white btn-lg" href="/cadastro.html">Cadastrar empresa</a></div>
+          <div class="actions"><a class="btn btn-white btn-lg" href="/cadastro">Cadastrar empresa</a></div>
         </div>
       </div>
     </section>
   </main>
 
-  <footer id="site-footer"></footer>
-
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script>
-    (function () {
-      const u = PP.photoUrl;
-      document.getElementById('hero-bg').style.backgroundImage = 'url(' + u(PP.IMAGENS.heroVender, 1800) + ')';
-      document.getElementById('cta-bg').style.backgroundImage = 'url(' + u(PP.IMAGENS.ctaVender, 1400) + ')';
-      document.getElementById('split-img').src = u('1521791136064-7986c2920216', 900);
-      document.getElementById('po-real').src = u('1517248135467-4c7edcad34c4', 800);
-      document.getElementById('po-ilus').src = u('1414235077428-338989a2e8c0', 800);
-      document.getElementById('hero-wa').href = PP.whatsappUrl('Olá! Quero vender minha empresa e tenho algumas dúvidas.');
-    })();
-  </script>
+  <?php site_footer(); page_scripts(); ?>
 </body>
 </html>

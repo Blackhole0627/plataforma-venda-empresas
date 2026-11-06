@@ -1,19 +1,12 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Editar anúncio · Área da equipe</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/admin.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body class="admin" data-page="anuncios" data-title="Anúncio">
+<?php
+require dirname(__DIR__) . '/inc/bootstrap.php';
+$editId = (int) ($_GET['id'] ?? 0);
+$fromId = (int) ($_GET['from'] ?? 0);
+$anuncio = $editId ? anuncio($editId) : null;
+$cad = $fromId ? cadastro($fromId) : (($anuncio && $anuncio['cadastroId']) ? cadastro($anuncio['cadastroId']) : null);
+if (($editId && !$anuncio) || ($fromId && !$cad)) { require_login(); redirect('/admin/anuncios'); }
+admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anuncios');
+?>
   <div class="adm">
     <aside id="adm-side"></aside>
     <div class="adm-main">
@@ -21,7 +14,7 @@
       <main class="adm-content">
         <div class="adm-head">
           <div>
-            <a class="back" href="/admin/anuncios.html"><i data-lucide="arrow-left"></i>Anúncios</a>
+            <a class="back" href="/admin/anuncios"><i data-lucide="arrow-left"></i>Anúncios</a>
             <h2 id="ed-title">Novo anúncio</h2>
             <div id="ed-sub" class="muted" style="font-size:.9rem"></div>
           </div>
@@ -104,9 +97,7 @@
     </div>
   </div>
 
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <?php admin_scripts(['anuncio' => $anuncio, 'cadastro' => $cad]); ?>
   <script>
     (function () {
       const { Store, SEGMENTOS, esc, money, ic } = PP;
@@ -118,7 +109,7 @@
       let fotos = [];
 
       SEGMENTOS.forEach(s => $('segmento').insertAdjacentHTML('beforeend', '<option value="' + s.slug + '">' + esc(s.nome) + '</option>'));
-      Store.cidades(true).slice().sort((a, b) => a.nome.localeCompare(b.nome)).forEach(c =>
+      Store.cidades(true).forEach(c =>
         $('cidade').insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
 
       const moneyIn = v => v ? 'R$ ' + Number(v).toLocaleString('pt-BR') : '';
@@ -143,8 +134,8 @@
         $('ed-title').textContent = 'Criar anúncio';
       }
       if (cad) {
-        $('from-note').innerHTML = '<div class="note info" style="margin-bottom:20px">' + ic('link') + '<span>Dados puxados do cadastro <a href="/admin/cadastro.html?id=' + cad.id + '"><strong>' + esc(cad.protocolo) + '</strong></a> · ' + esc(cad.empresa.nome) + ' (' + esc(cad.responsavel.nome) + '). Confira e ajuste o texto antes de publicar. O nome da empresa não vai pro anúncio.</span></div>' +
-          (!cad.cidade && cad.cidadeOutra ? '<div class="note warn" style="margin-bottom:20px">' + ic('map-pin') + '<span>A cidade <strong>' + esc(cad.cidadeOutra) + '</strong> ainda não está cadastrada. <a href="/admin/cidades.html">Cadastre aqui</a> e depois escolha ela no campo cidade.</span></div>' : '');
+        $('from-note').innerHTML = '<div class="note info" style="margin-bottom:20px">' + ic('link') + '<span>Dados puxados do cadastro <a href="/admin/cadastro?id=' + cad.id + '"><strong>' + esc(cad.protocolo) + '</strong></a> · ' + esc(cad.empresa.nome) + ' (' + esc(cad.responsavel.nome) + '). Confira e ajuste o texto antes de publicar. O nome da empresa não vai pro anúncio.</span></div>' +
+          (!cad.cidade && cad.cidadeOutra ? '<div class="note warn" style="margin-bottom:20px">' + ic('map-pin') + '<span>A cidade <strong>' + esc(cad.cidadeOutra) + '</strong> ainda não está cadastrada. <a href="/admin/cidades">Cadastre aqui</a> e depois escolha ela no campo cidade.</span></div>' : '');
       }
       $('desc-count').textContent = $('descricao').value.length;
       PP.bindMasks();
@@ -166,10 +157,15 @@
         if (r) { fotos.splice(Number(r.dataset.rm), 1); renderPhotos(); }
       });
       $('file').addEventListener('change', async e => {
-        for (const f of [...e.target.files].slice(0, MAX - fotos.length)) {
-          try { fotos.push(await PP.resizeImage(f, 1000, 0.65)); renderPhotos(); } catch (err) {}
-        }
+        const files = [...e.target.files].slice(0, MAX - fotos.length);
         e.target.value = '';
+        for (const f of files) {
+          try {
+            const small = await PP.resizeImage(f, 1600, 0.82);
+            fotos.push(await Store.uploadFoto(PP.dataUrlToBlob(small)));
+            renderPhotos();
+          } catch (err) { PP.toast(err.message || 'Não deu pra enviar a foto', 'error'); }
+        }
       });
       $('use-stock').onclick = () => {
         if (!$('segmento').value) return PP.toast('Escolha o segmento primeiro', 'error');
@@ -207,7 +203,7 @@
 
       /* ---------- save ---------- */
       const v = (id, ok) => { $(id).closest('.field').classList.toggle('invalid', !ok); return ok; };
-      function save(status) {
+      async function save(status, btn) {
         const d = current();
         const ok = [v('segmento', !!$('segmento').value), v('cidade', !!$('cidade').value), v('bairro', !!d.bairro),
           v('descricao', d.descricao.length >= 30), v('preco', d.preco > 0)].every(Boolean);
@@ -216,14 +212,13 @@
         d.status = status;
         if (anuncio) d.id = anuncio.id;
         if (cad) d.cadastroId = cad.id;
-        const saved = Store.saveAnuncio(d);
-        if (saved.error) return PP.toast(saved.error, 'error');
-        if (cad) Store.setCadastroStatus(cad.id, status === 'publicado' ? 'publicado' : 'analise', { anuncioId: saved.id, publicadoEm: Date.now() });
+        const saved = await PP.Admin.busy(btn, () => Store.saveAnuncio(d));
+        if (!saved) return;
         PP.toast(status === 'publicado' ? 'Anúncio ' + saved.codigo + ' publicado no site' : 'Rascunho salvo');
-        setTimeout(() => { location.href = '/admin/anuncios.html'; }, 900);
+        setTimeout(() => { location.href = '/admin/anuncios'; }, 900);
       }
-      $('form').addEventListener('submit', e => { e.preventDefault(); save('publicado'); });
-      $('save-draft').onclick = () => save(anuncio && anuncio.status === 'pausado' ? 'pausado' : 'rascunho');
+      $('form').addEventListener('submit', e => { e.preventDefault(); save('publicado', $('publish')); });
+      $('save-draft').onclick = () => save(anuncio && anuncio.status === 'pausado' ? 'pausado' : 'rascunho', $('save-draft'));
 
       renderPhotos();
     })();

@@ -1,19 +1,7 @@
-<!doctype html>
-<html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Anúncios · Área da equipe</title>
-  <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/assets/css/style.css">
-  <link rel="stylesheet" href="/assets/css/admin.css">
-  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
-</head>
-<body class="admin" data-page="anuncios" data-title="Anúncios">
+<?php
+require dirname(__DIR__) . '/inc/bootstrap.php';
+admin_head('Anúncios', 'anuncios');
+?>
   <div class="adm">
     <aside id="adm-side"></aside>
     <div class="adm-main">
@@ -24,7 +12,7 @@
             <div class="tabs" id="tabs"></div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;flex:1;justify-content:flex-end">
               <div class="input-icon"><i data-lucide="search"></i><input class="input" id="q" type="search" placeholder="Buscar por código, cidade, segmento..."></div>
-              <a class="btn btn-primary" href="/admin/anuncio-editar.html"><i data-lucide="plus"></i> Novo anúncio</a>
+              <a class="btn btn-primary" href="/admin/anuncio-editar"><i data-lucide="plus"></i> Novo anúncio</a>
             </div>
           </div>
           <table class="table">
@@ -36,9 +24,7 @@
     </div>
   </div>
 
-  <script src="/assets/js/data.js"></script>
-  <script src="/assets/js/app.js"></script>
-  <script src="/assets/js/admin.js"></script>
+  <?php admin_scripts(['anuncios' => anuncios_todos()]); ?>
   <script>
     (function () {
       const { Store, esc, money, ic } = PP, A = PP.Admin;
@@ -46,7 +32,7 @@
       let filtro = 'todos', q = '';
 
       function render() {
-        const all = Store.anuncios({ all: true });
+        const all = Store.anuncios();
         const n = s => all.filter(a => a.status === s).length;
         $('tabs').innerHTML = [['todos', 'Todos (' + all.length + ')'], ['publicado', 'Publicados (' + n('publicado') + ')'], ['pausado', 'Pausados (' + n('pausado') + ')'], ['rascunho', 'Rascunhos (' + n('rascunho') + ')']]
           .map(([k, l]) => '<button data-f="' + k + '" class="' + (filtro === k ? 'active' : '') + '">' + l + '</button>').join('');
@@ -57,7 +43,7 @@
         $('rows').innerHTML = list.length ? list.map(a => {
           const s = PP.seg(a.segmento);
           const foto = PP.photoUrl(a.fotos[0] || s.fotos[0], 200);
-          const viewUrl = PP.anuncioUrl(a) + (a.status === 'publicado' ? '' : (PP.PRETTY ? '?' : '&') + 'preview=1');
+          const viewUrl = PP.anuncioUrl(a) + (a.status === 'publicado' ? '' : '?preview=1');
           return '<tr data-id="' + a.id + '">' +
             '<td><div class="t-flex"><img class="t-thumb" src="' + foto + '" alt=""><div><span class="t-main">' + esc(s.nome) + ' em ' + esc(PP.cidadeLabel(a.cidade)) + '</span><span class="t-sub">' + esc(a.codigo) + ' · ' + esc(a.bairro) + '</span></div></div></td>' +
             '<td data-l="Valor"><strong>' + money(a.preco) + '</strong></td>' +
@@ -66,7 +52,7 @@
             '<td data-l="Publicado">' + PP.dateBR(a.data) + '</td>' +
             '<td class="actions-cell">' +
               '<a class="icon-btn" href="' + viewUrl + '" target="_blank" title="Ver no site" aria-label="Ver no site">' + ic('eye') + '</a>' +
-              '<a class="icon-btn" href="/admin/anuncio-editar.html?id=' + a.id + '" title="Editar" aria-label="Editar">' + ic('pencil') + '</a>' +
+              '<a class="icon-btn" href="/admin/anuncio-editar?id=' + a.id + '" title="Editar" aria-label="Editar">' + ic('pencil') + '</a>' +
               '<button class="icon-btn" data-act="toggle" title="' + (a.status === 'publicado' ? 'Pausar' : 'Publicar') + '" aria-label="Pausar ou publicar">' + ic(a.status === 'publicado' ? 'pause' : 'play') + '</button>' +
               '<button class="icon-btn danger" data-act="del" title="Excluir" aria-label="Excluir">' + ic('trash-2') + '</button>' +
             '</td></tr>';
@@ -74,14 +60,26 @@
         PP.icons();
       }
 
-      document.addEventListener('click', e => {
+      document.addEventListener('click', async e => {
         const f = e.target.closest('[data-f]');
         if (f) { filtro = f.dataset.f; render(); return; }
         const b = e.target.closest('[data-act]'); if (!b) return;
         const a = Store.anuncio(b.closest('tr').dataset.id);
-        if (b.dataset.act === 'destaque') { Store.saveAnuncio({ id: a.id, destaque: !a.destaque }); PP.toast(a.destaque ? 'Marcado como destaque' : 'Destaque removido'); }
-        if (b.dataset.act === 'toggle') { const st = a.status === 'publicado' ? 'pausado' : 'publicado'; Store.saveAnuncio({ id: a.id, status: st }); PP.toast(st === 'publicado' ? 'Anúncio publicado' : 'Anúncio pausado'); }
-        if (b.dataset.act === 'del') { if (!confirm('Excluir o anúncio ' + a.codigo + '?')) return; Store.removeAnuncio(a.id); PP.toast('Anúncio excluído'); }
+        let ok = null;
+        if (b.dataset.act === 'destaque') {
+          ok = await A.busy(b, () => Store.patchAnuncio(a.id, { destaque: !a.destaque }));
+          if (ok) PP.toast(ok.destaque ? 'Marcado como destaque' : 'Destaque removido');
+        }
+        if (b.dataset.act === 'toggle') {
+          const st = a.status === 'publicado' ? 'pausado' : 'publicado';
+          ok = await A.busy(b, () => Store.patchAnuncio(a.id, { status: st }));
+          if (ok) PP.toast(st === 'publicado' ? 'Anúncio publicado' : 'Anúncio pausado');
+        }
+        if (b.dataset.act === 'del') {
+          if (!confirm('Excluir o anúncio ' + a.codigo + '? Isso não tem volta.')) return;
+          ok = await A.busy(b, () => Store.removeAnuncio(a.id).then(() => true));
+          if (ok) PP.toast('Anúncio excluído');
+        }
         render();
       });
       $('q').addEventListener('input', e => { q = e.target.value; render(); });
