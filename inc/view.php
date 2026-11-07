@@ -48,8 +48,8 @@ function page_head(array $m): void
   <meta property="og:image" content="<?= h($image) ?>">
   <meta name="twitter:card" content="summary_large_image">
 <?php endif; ?>
-  <meta name="theme-color" content="#0d7a5a">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <meta name="theme-color" content="#01391b">
+  <link rel="icon" href="/assets/img/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -68,9 +68,8 @@ function page_head(array $m): void
 
 function logo(bool $light = false): string
 {
-    return '<a class="logo' . ($light ? ' logo-light' : '') . '" href="/" aria-label="' . h(cfg('marca')) . ' início">' .
-        '<span class="logo-mark">' . ic('handshake') . '</span>' .
-        '<span class="logo-text">' . h(cfg('marca_a')) . '<b>' . h(cfg('marca_b')) . '</b></span></a>';
+    return '<a class="logo" href="/" aria-label="' . h(cfg('marca')) . ' início">' .
+        '<img src="/assets/img/' . ($light ? 'logo-light' : 'logo') . '.png" alt="' . h(cfg('marca')) . '" width="662" height="160"></a>';
 }
 
 function site_header(string $page = ''): void
@@ -169,7 +168,7 @@ function consultor_para(string $uf): ?array
 function config_js(): array
 {
     return [
-        'marca' => cfg('marca'), 'marcaA' => cfg('marca_a'), 'marcaB' => cfg('marca_b'), 'slogan' => cfg('slogan'),
+        'marca' => cfg('marca'), 'slogan' => cfg('slogan'),
         'whatsapp' => cfg('whatsapp'), 'whatsappLabel' => cfg('whatsapp_label'), 'email' => cfg('email'),
         'instagram' => cfg('instagram'), 'horario' => cfg('horario'),
     ];

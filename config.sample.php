@@ -21,21 +21,19 @@ return [
     'debug' => false,
 
     /* ---------- brand ---------- */
-    'marca' => 'PassaPonto',
-    'marca_a' => 'Passa',   // logo, first part
-    'marca_b' => 'Ponto',   // logo, bold part
+    'marca' => 'Empresas à Venda',
     'slogan' => 'Compra e venda de empresas com sigilo',
 
     /* ---------- contacts ---------- */
     'whatsapp' => '5511999999999',          // only digits, with 55 + DDD
     'whatsapp_label' => '(11) 99999-9999',
-    'email' => 'contato@passaponto.com.br',
+    'email' => 'contato@empresasavenda.com.br',
     'instagram' => '',                      // full URL, empty hides the icon
     'horario' => 'Seg a sex, 9h às 18h',
 
     /* ---------- e-mail notices ---------- */
     'notificar_email' => '',                // team inbox for new submissions/messages, empty = off
-    'email_remetente' => 'no-reply@passaponto.com.br',
+    'email_remetente' => 'no-reply@empresasavenda.com.br',
 
     /* ---------- team shown on the site ----------
      * foto: Unsplash id or a path like /uploads/equipe/maria.jpg

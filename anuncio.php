@@ -38,7 +38,7 @@ page_head([
     'robots' => $visivel ? null : 'noindex, nofollow',
     'jsonld' => [
         ['@context' => 'https://schema.org', '@type' => 'Product', 'name' => $title, 'sku' => $a['codigo'], 'category' => $s['nome'],
-         'description' => $a['descricao'], 'image' => array_map(fn($f) => str_starts_with(photo_url($f), '/') ? site_url($f) : photo_url($f, 1200), array_slice($fotos, 0, 5)),
+         'description' => $a['descricao'], 'image' => array_map(fn($f) => str_starts_with(photo_url($f), '/') ? site_url(photo_url($f)) : photo_url($f, 1200), array_slice($fotos, 0, 5)),
          'offers' => ['@type' => 'Offer', 'price' => $a['preco'], 'priceCurrency' => 'BRL', 'availability' => 'https://schema.org/InStock', 'url' => $pageUrl,
                       'areaServed' => ['@type' => 'City', 'name' => $cid['nome'] ?? '']]],
         ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => [

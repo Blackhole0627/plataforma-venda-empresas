@@ -235,7 +235,7 @@ function fotos_limpas($list): array
     $out = [];
     foreach ((array) $list as $f) {
         if (!is_string($f)) continue;
-        if (preg_match('/^u:[0-9a-f-]{8,40}$/', $f) || preg_match('#^/uploads/[a-z0-9/_-]+\.(jpg|png|webp)$#', $f)) $out[] = $f;
+        if (preg_match('#^u:([0-9a-f-]{8,40}|/assets/img/site/[a-z0-9-]+\.jpg)$#', $f) || preg_match('#^/uploads/[a-z0-9/_-]+\.(jpg|png|webp)$#', $f)) $out[] = $f;
         if (count($out) >= 15) break;
     }
     return array_values(array_unique($out));

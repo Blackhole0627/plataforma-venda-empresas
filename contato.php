@@ -19,7 +19,7 @@ site_header('contato');
       </div>
     </section>
 
-    <div class="container form-layout" style="grid-template-columns:1fr 380px">
+    <div class="container form-layout form-layout-contato">
       <div class="form-card">
         <form id="form" novalidate>
           <h2 style="font-size:1.4rem">Envie uma mensagem</h2>

@@ -23,7 +23,7 @@ page_head([
     'page' => 'home',
     'jsonld' => [
         ['@context' => 'https://schema.org', '@type' => 'Organization', 'name' => $marca, 'url' => site_url('/'),
-         'logo' => site_url('/assets/img/favicon.svg'), 'email' => cfg('email'),
+         'logo' => site_url('/assets/img/logo.png'), 'email' => cfg('email'),
          'contactPoint' => ['@type' => 'ContactPoint', 'telephone' => '+' . cfg('whatsapp'), 'contactType' => 'customer service', 'areaServed' => 'BR', 'availableLanguage' => 'Portuguese']],
         ['@context' => 'https://schema.org', '@type' => 'WebSite', 'name' => $marca, 'url' => site_url('/'),
          'potentialAction' => ['@type' => 'SearchAction', 'target' => site_url('/comprar-empresa?q={q}'), 'query-input' => 'required name=q']],
@@ -137,6 +137,54 @@ site_header('home');
             </ol>
             <a class="btn btn-primary" href="/comprar-empresa">Ver empresas à venda <?= ic('arrow-right') ?></a>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section section-alt" id="quem-somos">
+      <div class="container split">
+        <img class="rounded" src="/assets/img/site/quem-somos.jpg" alt="Sala de reunião do escritório" loading="lazy">
+        <div>
+          <span class="kicker">Quem somos</span>
+          <h2>Uma equipe focada em compra e venda de empresas</h2>
+          <p class="muted">A gente ajuda quem quer vender a encontrar o comprador certo e quem quer comprar a achar um negócio que faça sentido, sempre com sigilo.</p>
+          <ul class="next-steps" style="margin-top:22px">
+            <li><span class="n"><i data-lucide="check" style="width:15px;height:15px"></i></span><span>Sigilo em toda a negociação</span></li>
+            <li><span class="n"><i data-lucide="check" style="width:15px;height:15px"></i></span><span>Compradores filtrados pela equipe</span></li>
+            <li><span class="n"><i data-lucide="check" style="width:15px;height:15px"></i></span><span>Atendimento direto pelo WhatsApp</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="servicos">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Nosso trabalho</span>
+          <h2>Do primeiro contato até a assinatura</h2>
+        </div>
+        <div class="svc-grid">
+          <article class="svc-card">
+            <img src="/assets/img/site/prospeccao.jpg" alt="Consultora atendendo um comprador pelo computador" width="1000" height="667" loading="lazy">
+            <div class="svc-body"><h3>Prospecção de compradores</h3><p class="muted">A gente vai atrás de quem tem perfil e interesse no seu tipo de negócio. Você só conversa com comprador de verdade.</p></div>
+          </article>
+          <article class="svc-card">
+            <img src="/assets/img/site/intermediacao.jpg" alt="Consultora conversando com o dono de uma empresa" width="1000" height="667" loading="lazy">
+            <div class="svc-body"><h3>Intermediação</h3><p class="muted">A equipe faz a ponte entre você e o comprador e ajuda nas conversas até os dois lados chegarem num acordo.</p></div>
+          </article>
+          <article class="svc-card">
+            <img src="/assets/img/site/fechamento.jpg" alt="Empresário assinando o contrato de venda" width="1000" height="667" loading="lazy">
+            <div class="svc-body"><h3>Fechamento do negócio</h3><p class="muted">Quando as partes se acertam, a gente acompanha tudo até a assinatura do contrato.</p></div>
+          </article>
+        </div>
+        <div class="split svc-invest" id="investimento">
+          <div>
+            <span class="kicker">Investimento no serviço</span>
+            <h2>Quanto custa vender com a gente</h2>
+            <p class="muted">O cadastro é grátis. O valor do serviço depende do tamanho e do tipo do negócio, e a equipe te passa as condições depois da análise.</p>
+            <a class="btn btn-primary btn-lg" href="/contato" style="margin-top:18px">Falar com a equipe</a>
+          </div>
+          <img class="rounded" src="/assets/img/site/investimento.jpg" alt="Proposta de serviço sendo conferida com calculadora ao lado" loading="lazy">
         </div>
       </div>
     </section>

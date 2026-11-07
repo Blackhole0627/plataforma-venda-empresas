@@ -7,7 +7,7 @@
   const PP = window.PP;
 
   /* brand + contacts come from config.php through the page */
-  const CONFIG = (PP.BOOT && PP.BOOT.config) || { marca: '', marcaA: '', marcaB: '', whatsapp: '', whatsappLabel: '', email: '' };
+  const CONFIG = (PP.BOOT && PP.BOOT.config) || { marca: '', whatsapp: '', whatsappLabel: '', email: '' };
   const PRETTY = true;
 
   /* ---------- formatting ---------- */
@@ -78,9 +78,7 @@
 
   /* ---------- header (rendered by PHP, JS only adds behaviour) ---------- */
   function logo(light) {
-    return '<a class="logo' + (light ? ' logo-light' : '') + '" href="/" aria-label="' + esc(CONFIG.marca) + ' início">' +
-      '<span class="logo-mark">' + ic('handshake') + '</span>' +
-      '<span class="logo-text">' + esc(CONFIG.marcaA) + '<b>' + esc(CONFIG.marcaB) + '</b></span></a>';
+    return '<a class="logo" href="/" aria-label="' + esc(CONFIG.marca) + ' início"><img src="/assets/img/' + (light ? 'logo-light' : 'logo') + '.png" alt="' + esc(CONFIG.marca) + '" width="662" height="160"></a>';
   }
 
   function header() {

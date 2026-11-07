@@ -79,7 +79,7 @@ router.php                   local dev server only
 
 ## Swap the brand
 
-Name, logo text, WhatsApp, e-mail, hours and the team cards are in `config.php`. Colors are in `assets/css/style.css` (`:root`). Site photos (hero, banners) are Unsplash ids in `inc/data.php` (`IMAGENS`).
+Name, WhatsApp, e-mail, hours and the team cards are in `config.php`. The logo files are `assets/img/logo.png` (light backgrounds), `logo-light.png` (dark backgrounds) and `favicon.png`. Colors are in `assets/css/style.css` (`:root`). Client photos are in `assets/img/site/`. The hero, banners and other page images are set in `inc/data.php` (`IMAGENS`).
 
 ## Front-end prototype
 

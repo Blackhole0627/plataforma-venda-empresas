@@ -117,8 +117,8 @@ function time_ago(?int $ms): string
 function photo_url(string $p, int $w = 800): string
 {
     if ($p === '') return '';
-    if (str_starts_with($p, '/') || str_starts_with($p, 'http')) return $p;
     $id = preg_replace('/^u:/', '', $p);
+    if (str_starts_with($id, '/') || str_starts_with($id, 'http')) return $id;
     return 'https://images.unsplash.com/photo-' . $id . '?auto=format&fit=crop&w=' . $w . '&q=70';
 }
 

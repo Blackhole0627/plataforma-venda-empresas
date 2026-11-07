@@ -16,8 +16,8 @@
 
   function photoUrl(p, w) {
     if (!p) return '';
-    if (p.startsWith('data:') || p.startsWith('http') || p.startsWith('/') || p.startsWith('blob:')) return p;
     const id = p.replace(/^u:/, '');
+    if (id.startsWith('data:') || id.startsWith('http') || id.startsWith('/') || id.startsWith('blob:')) return id;
     return 'https://images.unsplash.com/photo-' + id + '?auto=format&fit=crop&w=' + (w || 800) + '&q=70';
   }
 

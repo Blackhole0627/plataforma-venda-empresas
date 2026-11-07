@@ -64,7 +64,7 @@ $itemList = ['@context' => 'https://schema.org', '@type' => 'ItemList',
     'itemListElement' => array_map(fn($a, $i) => ['@type' => 'ListItem', 'position' => $i + 1, 'url' => site_url(anuncio_url($a))], $slice, array_keys($slice))];
 
 page_head([
-    'title' => $titulo . ' · ' . cfg('marca'),
+    'title' => ($titulo === 'Empresas à venda' ? 'Comprar empresa' : $titulo) . ' · ' . cfg('marca'),
     'description' => ($s1 ? $s1['nome'] . ' à venda' : 'Empresas à venda') . $where . '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.',
     'canonical' => $canonical,
     'page' => 'comprar',
@@ -233,7 +233,7 @@ site_header('comprar');
         $('page-sub').textContent = c
           ? 'Negócios à venda' + where + ' com faturamento, estrutura e valores. O nome das empresas fica em sigilo.'
           : 'Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.';
-        PP.setMeta(title + ' · ' + PP.CONFIG.marca,
+        PP.setMeta((title === 'Empresas à venda' ? 'Comprar empresa' : title) + ' · ' + PP.CONFIG.marca,
           (s ? s.nome + ' à venda' : 'Empresas à venda') + where + '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.');
 
         let crumbs = '<li><a href="/">Início</a></li><li><a href="/comprar-empresa">Comprar empresa</a></li>';
