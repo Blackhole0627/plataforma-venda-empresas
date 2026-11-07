@@ -6,7 +6,7 @@
 $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $root = __DIR__;
 
-if (preg_match('#^/(inc|\.git)(/|$)#', $path) || preg_match('#(config(\.sample)?\.php|router\.php|\.sql|\.md)$#', $path)
+if (preg_match('#^/(inc|docs|tools|\.git)(/|$)#', $path) || preg_match('#(config(\.sample)?\.php|router\.php|\.sql|\.md)$#', $path)
     || (str_starts_with($path, '/uploads/') && preg_match('#\.(php\d?|phtml|phar|html?|svg|js)$#i', $path))) {
     http_response_code(403);
     exit('Forbidden');

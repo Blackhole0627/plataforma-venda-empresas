@@ -12,7 +12,7 @@ ErrorDocument 404 /404.php
   # RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
   # Private folders
-  RewriteRule ^(inc|\.git)(/|$) - [F,L]
+  RewriteRule ^(inc|docs|tools|\.git)(/|$) - [F,L]
 
   # Friendly URLs (SEO)
   RewriteRule ^empresa-a-venda/([a-z0-9-]+)/?$ anuncio.php?slug=$1 [L,QSA]
@@ -27,7 +27,7 @@ ErrorDocument 404 /404.php
   RewriteRule ^(.+?)/?$ $1.php [L]
 </IfModule>
 
-<FilesMatch "^(config(\.sample)?\.php|router\.php|.*\.(sql|md|py|log))$">
+<FilesMatch "^(\.ht.*|config(\.sample)?\.php|router\.php|.*\.(sql|md|py|log))$">
   Require all denied
 </FilesMatch>
 

@@ -104,3 +104,10 @@ CREATE TABLE IF NOT EXISTS contatos (
   criado_em DATETIME NOT NULL,
   KEY idx_contatos_ip (ip, criado_em)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS login_falhas (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ip VARCHAR(45) NOT NULL,
+  criado_em DATETIME NOT NULL,
+  KEY idx_login_falhas (ip, criado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

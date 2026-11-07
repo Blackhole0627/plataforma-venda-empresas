@@ -13,7 +13,7 @@ return [
     ],
 
     // Public address, no trailing slash. Used in canonical links, sitemap and e-mails.
-    'site_url' => 'http://localhost:8000',
+    'site_url' => 'https://www.seudominio.com.br',
     'timezone' => 'America/Sao_Paulo',
 
     // false = adds noindex to every page (use while the site is in review)
@@ -33,10 +33,10 @@ return [
 
     /* ---------- e-mail notices ---------- */
     'notificar_email' => '',                // team inbox for new submissions/messages, empty = off
-    'email_remetente' => 'no-reply@empresasavenda.com.br',
+    'email_remetente' => 'no-reply@seudominio.com.br', // must use the site's domain or mail may be rejected
 
     /* ---------- team shown on the site ----------
-     * foto: Unsplash id or a path like /uploads/equipe/maria.jpg
+     * foto: a path like /assets/img/equipe/maria.jpg (square, about 400x400) or an Unsplash id
      * ufs:  states this person handles (listing page shows the right consultant)
      * cadastros: true = appears on the seller form as "vai analisar seu cadastro"
      */

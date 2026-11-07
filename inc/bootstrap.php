@@ -227,13 +227,15 @@ function csrf_ok(?string $t): bool
 }
 
 /* ---------- e-mail notice (best effort) ---------- */
-function notify(string $subject, string $body): void
+function notify(string $subject, string $body): bool
 {
     $to = (string) cfg('notificar_email', '');
-    if ($to === '') return;
+    if ($to === '') return false;
     $from = (string) cfg('email_remetente', 'no-reply@localhost');
     $headers = 'From: ' . cfg('marca') . ' <' . $from . ">\r\n" .
         "MIME-Version: 1.0\r\nContent-Type: text/plain; charset=UTF-8\r\nContent-Transfer-Encoding: 8bit";
     $subj = '=?UTF-8?B?' . base64_encode($subject) . '?=';
-    if (!@mail($to, $subj, $body, $headers)) error_log('mail() failed: ' . $subject);
+    $ok = @mail($to, $subj, $body, $headers);
+    if (!$ok) error_log('mail() failed: ' . $subject);
+    return $ok;
 }

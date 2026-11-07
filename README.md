@@ -43,6 +43,8 @@ php -S localhost:8000 router.php     # router.php mimics the .htaccess rules
 
 ## Deploy (shared hosting with cPanel)
 
+For launch day, follow [docs/LAUNCH.md](docs/LAUNCH.md). It adds the client checklist, the release zip and `tools/smoke_test.py`. The team guide is [docs/guia-da-equipe.md](docs/guia-da-equipe.md).
+
 1. Create a MySQL database and user in cPanel, give the user all privileges on that database.
 2. Upload every file in this repo to `public_html` (FTP, File Manager or cPanel Git). Keep `.htaccess`.
 3. Copy `config.sample.php` to `config.php` and fill in:

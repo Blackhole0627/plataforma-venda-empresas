@@ -12,15 +12,20 @@ $email = '';
 if (is_post()) {
     $email = strtolower(trim((string) ($_POST['email'] ?? '')));
     $senha = (string) ($_POST['senha'] ?? '');
-    $falhas = $_SESSION['falhas'] ?? 0;
+    $ip = client_ip();
+    db()->prepare('DELETE FROM login_falhas WHERE criado_em < ?')->execute([date('Y-m-d H:i:s', time() - 900)]);
+    $st = db()->prepare('SELECT COUNT(*) FROM login_falhas WHERE ip = ?');
+    $st->execute([$ip]);
     if (!csrf_ok($_POST['t'] ?? null)) {
         $erro = 'A página ficou muito tempo aberta. Tenta de novo.';
+    } elseif ((int) $st->fetchColumn() >= 8) {
+        $erro = 'Muitas tentativas erradas. Espera 15 minutos e tenta de novo.';
     } else {
-        if ($falhas >= 3) sleep(min(5, $falhas - 2)); // slows down guessing
         $st = db()->prepare('SELECT * FROM usuarios WHERE email = ?');
         $st->execute([$email]);
         $u = $st->fetch();
         if ($u && password_verify($senha, $u['senha_hash'])) {
+            db()->prepare('DELETE FROM login_falhas WHERE ip = ?')->execute([$ip]);
             session_regenerate_id(true);
             $_SESSION = ['user' => ['id' => (int) $u['id'], 'nome' => $u['nome'], 'email' => $u['email']]];
             db()->prepare('UPDATE usuarios SET ultimo_login = ? WHERE id = ?')->execute([now(), $u['id']]);
@@ -29,7 +34,7 @@ if (is_post()) {
             }
             redirect($next);
         }
-        $_SESSION['falhas'] = $falhas + 1;
+        db()->prepare('INSERT INTO login_falhas (ip, criado_em) VALUES (?, ?)')->execute([$ip, now()]);
         $erro = 'E-mail ou senha errados.';
     }
 }

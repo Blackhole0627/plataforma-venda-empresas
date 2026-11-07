@@ -287,7 +287,7 @@ site_header('cadastro');
         if (files.length > room) PP.toast('Máximo de ' + MAX_FOTOS + ' fotos. Algumas ficaram de fora.', 'error');
         for (const file of files.slice(0, room)) {
           const i = fotos.push(null) - 1; renderPhotos();
-          try { fotos[i] = await PP.resizeImage(file, 900, 0.62); } catch (e) { fotos.splice(i, 1); }
+          try { fotos[i] = await PP.resizeImage(file, 1400, 0.78); } catch (e) { fotos.splice(i, 1); }
           renderPhotos();
         }
         $('foto-field').classList.remove('invalid');

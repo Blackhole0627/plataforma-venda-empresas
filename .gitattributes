@@ -1,0 +1,7 @@
+# Left out of the release zip (git archive). See docs/LAUNCH.md.
+router.php export-ignore
+README.md export-ignore
+docs export-ignore
+tools export-ignore
+.gitignore export-ignore
+.gitattributes export-ignore

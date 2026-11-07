@@ -4,7 +4,7 @@ require dirname(__DIR__) . '/inc/bootstrap.php';
 
 if (!is_post()) json_error('Método inválido.', 405);
 $user = require_login(true);
-if (!csrf_ok($_SERVER['HTTP_X_CSRF'] ?? null)) json_error('Sessão expirada. Recarregue a página.', 419);
+if (!csrf_ok($_SERVER['HTTP_X_CSRF'] ?? null)) json_error('Sessão expirada. Recarregue a página.', 403);
 
 $isForm = str_starts_with((string) ($_SERVER['CONTENT_TYPE'] ?? ''), 'multipart/form-data');
 $d = $isForm ? $_POST : json_body();
