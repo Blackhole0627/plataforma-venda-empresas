@@ -8,13 +8,13 @@
 
   /* Brand placeholder. Swap name/contacts here when the client sends them. */
   const CONFIG = {
-    marca: 'PassaPonto',
-    marcaA: 'Passa', marcaB: 'Ponto',
+    marca: 'Empresas à Venda',
+    
     slogan: 'Compra e venda de empresas com sigilo',
     whatsapp: '5511999999999',
     whatsappLabel: '(11) 99999-9999',
-    email: 'contato@passaponto.com.br',
-    instagram: '@passaponto'
+    email: 'contato@empresasavenda.com.br',
+    instagram: '@empresasavenda'
   };
 
   /* friendly URLs on the live server (Netlify rewrites), query strings locally */
@@ -88,9 +88,7 @@
 
   /* ---------- header / footer ---------- */
   function logo(light) {
-    return '<a class="logo' + (light ? ' logo-light' : '') + '" href="/index.html" aria-label="' + CONFIG.marca + ' início">' +
-      '<span class="logo-mark">' + ic('handshake') + '</span>' +
-      '<span class="logo-text">' + CONFIG.marcaA + '<b>' + CONFIG.marcaB + '</b></span></a>';
+    return '<a class="logo" href="/index.html" aria-label="' + CONFIG.marca + ' início"><img src="/assets/img/' + (light ? 'logo-light' : 'logo') + '.png" alt="' + CONFIG.marca + '" width="662" height="160"></a>';
   }
 
   function header() {

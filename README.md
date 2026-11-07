@@ -51,7 +51,7 @@ _redirects          Netlify friendly URLs
 
 ## Swap the brand
 
-`PassaPonto` is a placeholder. Change it in `assets/js/app.js` (`CONFIG`) and the page titles, and the colors in `assets/css/style.css` (`:root`).
+`Empresas à Venda` is a placeholder. Change it in `assets/js/app.js` (`CONFIG`) and the page titles, and the colors in `assets/css/style.css` (`:root`).
 
 ## Next (back-end)
 

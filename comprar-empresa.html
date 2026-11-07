@@ -3,10 +3,10 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Empresas à venda · PassaPonto</title>
+  <title>Comprar empresa · Empresas à Venda</title>
   <meta name="description" content="Veja empresas à venda por cidade, segmento e faixa de valor. Academias, restaurantes, farmácias, mercados e muito mais.">
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="/assets/img/favicon.png" type="image/png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -180,7 +180,7 @@
         $('page-sub').textContent = c
           ? 'Negócios à venda' + where + ' com faturamento, estrutura e valores. O nome das empresas fica em sigilo.'
           : 'Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.';
-        PP.setMeta(title + ' · PassaPonto',
+        PP.setMeta((title === 'Empresas à venda' ? 'Comprar empresa' : title) + ' · Empresas à Venda',
           (s ? s.nome + ' à venda' : 'Empresas à venda') + where + '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.');
 
         let crumbs = '<li><a href="/index.html">Início</a></li><li><a href="/comprar-empresa.html">Comprar empresa</a></li>';

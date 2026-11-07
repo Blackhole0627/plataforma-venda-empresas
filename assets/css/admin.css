@@ -180,3 +180,5 @@ body.admin { background: #f2f4f6; }
   .stat .s-icon { display: none; }
   .kv { grid-template-columns: 1fr; }
 }
+
+.adm-initials { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #fff; font-weight: 700; font-size: .85rem; flex-shrink: 0; }
