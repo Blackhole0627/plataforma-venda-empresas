@@ -50,19 +50,29 @@ site_header('cadastro');
           <!-- STEP 2 -->
           <div class="step-pane" data-step="2">
             <h2>Sobre a empresa</h2>
-            <p class="muted">O nome da empresa não aparece no anúncio.</p>
+            <p class="muted">O nome da empresa e o endereço não aparecem no anúncio. No site só vai o bairro e a cidade.</p>
             <div class="grid-2">
               <div class="field"><label for="empresa">Nome da empresa</label>
                 <input class="input" id="empresa" name="empresa" placeholder="Nome fantasia">
                 <span class="error">Digite o nome da empresa.</span></div>
+              <div class="field"><label for="razaoSocial">Razão social</label>
+                <input class="input" id="razaoSocial" name="razaoSocial" placeholder="Como está no CNPJ">
+                <span class="error">Digite a razão social.</span></div>
+            </div>
+            <div class="grid-2">
               <div class="field"><label for="cnpj">CNPJ <small>(opcional)</small></label>
                 <input class="input" id="cnpj" name="cnpj" data-mask="cnpj" inputmode="numeric" placeholder="00.000.000/0000-00">
                 <span class="error">CNPJ incompleto.</span></div>
-            </div>
-            <div class="grid-2">
               <div class="field"><label for="segmento">Segmento</label>
                 <select class="select" id="segmento" name="segmento"><option value="">Escolha</option></select>
                 <span class="error">Escolha o segmento.</span></div>
+            </div>
+
+            <h3 class="form-sub">Endereço</h3>
+            <div class="grid-2">
+              <div class="field"><label for="cep">CEP</label>
+                <input class="input" id="cep" name="cep" data-mask="cep" inputmode="numeric" autocomplete="postal-code" placeholder="00000-000">
+                <span class="error">Digite o CEP.</span></div>
               <div class="field"><label for="cidade">Cidade</label>
                 <select class="select" id="cidade" name="cidade"><option value="">Escolha</option></select>
                 <span class="error">Escolha a cidade.</span></div>
@@ -70,10 +80,24 @@ site_header('cadastro');
             <div class="field hidden" id="outra-wrap"><label for="cidadeOutra">Qual cidade?</label>
               <input class="input" id="cidadeOutra" name="cidadeOutra" placeholder="Cidade/UF">
               <span class="error">Digite a cidade.</span></div>
-            <div class="grid-3">
+            <div class="grid-2">
+              <div class="field"><label for="rua">Rua</label>
+                <input class="input" id="rua" name="rua" autocomplete="address-line1" placeholder="Rua, avenida...">
+                <span class="error">Digite a rua.</span></div>
               <div class="field"><label for="bairro">Bairro</label>
                 <input class="input" id="bairro" name="bairro" placeholder="Bairro">
                 <span class="error">Digite o bairro.</span></div>
+            </div>
+            <div class="grid-2">
+              <div class="field"><label for="numero">Número</label>
+                <input class="input" id="numero" name="numero" placeholder="123">
+                <span class="error">Digite o número.</span></div>
+              <div class="field"><label for="complemento">Complemento <small>(opcional)</small></label>
+                <input class="input" id="complemento" name="complemento" autocomplete="address-line2" placeholder="Sala, loja, bloco..."></div>
+            </div>
+
+            <h3 class="form-sub">Estrutura</h3>
+            <div class="grid-3">
               <div class="field"><label for="fundacao">Ano de fundação</label>
                 <input class="input" id="fundacao" name="fundacao" type="number" inputmode="numeric" placeholder="2015">
                 <span class="error">Ano inválido.</span></div>
@@ -86,6 +110,25 @@ site_header('cadastro');
                 <input class="input" id="area" name="area" type="number" min="0" inputmode="numeric" placeholder="120"></div>
               <div class="field"><label for="horario">Horário de funcionamento</label>
                 <input class="input" id="horario" name="horario" placeholder="Seg a sex das 8h às 18h"></div>
+            </div>
+            <div class="grid-2">
+              <div class="field" id="imovel-field"><span class="label">O imóvel é</span>
+                <div class="choice-group">
+                  <label class="choice"><input type="radio" name="imovel" value="proprio"><span>Próprio</span></label>
+                  <label class="choice"><input type="radio" name="imovel" value="alugado"><span>Alugado</span></label>
+                </div>
+                <span class="error">Escolha uma opção.</span></div>
+              <div class="field"><span class="label">Tem energia solar?</span>
+                <div class="choice-group">
+                  <label class="choice"><input type="radio" name="energiaSolar" value="1"><span>Sim</span></label>
+                  <label class="choice"><input type="radio" name="energiaSolar" value="0" checked><span>Não</span></label>
+                </div></div>
+            </div>
+            <div class="grid-2">
+              <div class="field"><label for="instagram">Instagram <small>(opcional)</small></label>
+                <input class="input" id="instagram" name="instagram" placeholder="@suaempresa"></div>
+              <div class="field"><label for="siteEmpresa">Site da empresa <small>(opcional)</small></label>
+                <input class="input" id="siteEmpresa" name="siteEmpresa" inputmode="url" placeholder="www.suaempresa.com.br"></div>
             </div>
             <div class="field"><label for="descricao">Conte sobre o negócio</label>
               <textarea class="textarea" id="descricao" name="descricao" maxlength="1200" placeholder="O que a empresa faz, estrutura, clientes, diferenciais, o que vai junto na venda..."></textarea>
@@ -116,6 +159,15 @@ site_header('cadastro');
             <div class="grid-2">
               <div class="field"><label for="estoque">Valor do estoque</label>
                 <input class="input" id="estoque" name="estoque" data-mask="money" inputmode="numeric" placeholder="R$ 0"></div>
+              <div class="field"><label for="bens">Valor dos equipamentos, móveis e instalações</label>
+                <input class="input" id="bens" name="bens" data-mask="money" inputmode="numeric" placeholder="R$ 0"></div>
+            </div>
+            <div class="grid-2">
+              <div class="field"><span class="label">Aceita proposta?</span>
+                <div class="choice-group">
+                  <label class="choice"><input type="radio" name="aceitaProposta" value="1" checked><span>Sim</span></label>
+                  <label class="choice"><input type="radio" name="aceitaProposta" value="0"><span>Não</span></label>
+                </div></div>
               <div class="field"><span class="label">Venda com CNPJ?</span>
                 <div class="choice-group">
                   <label class="choice"><input type="radio" name="cnpjVenda" value="Sim"><span>Sim</span></label>
@@ -161,6 +213,10 @@ site_header('cadastro');
               <label class="check"><input type="checkbox" id="consent"><span>Autorizo a equipe a usar esses dados pra montar o anúncio e entrar em contato comigo. Li a <a href="#">política de privacidade</a>.</span></label>
               <span class="error">Marque a autorização pra continuar.</span>
             </div>
+            <div class="field" id="comissao-field">
+              <label class="check"><input type="checkbox" id="comissao"><span>Estou de acordo com a comissão da equipe se a empresa for vendida.</span></label>
+              <span class="error">Marque o aceite da comissão pra continuar.</span>
+            </div>
           </div>
 
           <input type="text" name="site" id="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
@@ -205,6 +261,23 @@ site_header('cadastro');
 
 
       $('descricao').addEventListener('input', () => { $('desc-count').textContent = $('descricao').value.length; });
+
+      // CEP fills street, bairro and city when they are still empty
+      let lastCep = '';
+      $('cep').addEventListener('input', async () => {
+        const d = $('cep').value.replace(/\D/g, '');
+        if (d.length !== 8 || d === lastCep) return;
+        lastCep = d;
+        try {
+          const r = await (await fetch('https://viacep.com.br/ws/' + d + '/json/')).json();
+          if (r.erro) return;
+          if (!val('rua') && r.logradouro) $('rua').value = r.logradouro;
+          if (!val('bairro') && r.bairro) $('bairro').value = r.bairro;
+          const c = Store.cidades(true).find(x => x.uf === r.uf && PP.slugify(x.nome) === PP.slugify(r.localidade || ''));
+          if (c && !$('cidade').value) { $('cidade').value = c.slug; $('outra-wrap').classList.add('hidden'); }
+          $('numero').focus();
+        } catch (e) { /* offline or blocked, the person types it */ }
+      });
       PP.bindMasks(form);
 
       /* ---------- validation ---------- */
@@ -220,11 +293,16 @@ site_header('cadastro');
           const y = Number(val('fundacao'));
           return [
             v('empresa', val('empresa').length >= 2),
+            v('razaoSocial', val('razaoSocial').length >= 2),
             v('cnpj', !val('cnpj') || val('cnpj').replace(/\D/g, '').length === 14),
             v('segmento', !!val('segmento')),
+            v('cep', val('cep').replace(/\D/g, '').length === 8),
             v('cidade', !!val('cidade')),
             $('cidade').value !== 'outra' ? v('cidadeOutra', true) : v('cidadeOutra', val('cidadeOutra').length >= 3),
+            v('rua', val('rua').length >= 3),
+            v('numero', val('numero').length >= 1),
             v('bairro', val('bairro').length >= 2),
+            (() => { const ok = !!form.imovel.value; $('imovel-field').classList.toggle('invalid', !ok); return ok; })(),
             v('fundacao', y >= 1900 && y <= new Date().getFullYear()),
             v('funcionarios', val('funcionarios') !== '' && Number(val('funcionarios')) >= 0),
             v('descricao', val('descricao').length >= 30)
@@ -237,7 +315,7 @@ site_header('cadastro');
         4: () => {
           const tipo = form.fotoTipo.value;
           $('foto-field').classList.toggle('invalid', tipo === 'reais' && !fotos.length);
-          return [tipo === 'ilustrativas' || fotos.length > 0, v('consent', $('consent').checked)];
+          return [tipo === 'ilustrativas' || fotos.length > 0, v('consent', $('consent').checked), v('comissao', $('comissao').checked)];
         }
       };
       // live re-validate after first error
@@ -313,7 +391,10 @@ site_header('cadastro');
         const cid = $('cidade').value;
         return {
           responsavel: { nome: val('nome'), email: val('email'), whatsapp: val('whatsapp') },
-          empresa: { nome: val('empresa'), cnpj: val('cnpj') },
+          empresa: { nome: val('empresa'), cnpj: val('cnpj'), razaoSocial: val('razaoSocial'), instagram: val('instagram'), site: val('siteEmpresa') },
+          endereco: { cep: val('cep'), rua: val('rua'), numero: val('numero'), complemento: val('complemento') },
+          imovel: form.imovel.value, energiaSolar: form.energiaSolar.value === '1',
+          bens: PP.unmoney(val('bens')), aceitaProposta: form.aceitaProposta.value === '1', aceiteComissao: $('comissao').checked,
           segmento: val('segmento'),
           cidade: cid === 'outra' ? '' : cid, cidadeOutra: cid === 'outra' ? val('cidadeOutra') : '',
           bairro: val('bairro'), fundacao: Number(val('fundacao')), funcionarios: Number(val('funcionarios')),
@@ -332,6 +413,7 @@ site_header('cadastro');
           row('Responsável', d.responsavel.nome) + row('WhatsApp', d.responsavel.whatsapp) +
           row('Empresa', d.empresa.nome) + row('Segmento', d.segmento ? PP.seg(d.segmento).nome : '') +
           row('Cidade', d.cidade ? PP.cidadeLabel(d.cidade) : d.cidadeOutra) + row('Bairro', d.bairro) +
+          row('Endereço', d.endereco.rua + ', ' + d.endereco.numero + (d.endereco.complemento ? ' ' + d.endereco.complemento : '')) +
           row('Valor pedido', PP.money(d.preco)) + row('Faturamento/mês', PP.money(d.faturamento));
       }
       async function submit() {

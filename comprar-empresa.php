@@ -25,6 +25,10 @@ $max = (int) ($_GET['max'] ?? 0) ?: MAXV;
 $ordem = (string) ($_GET['ordem'] ?? 'recentes');
 $page = max(1, (int) ($_GET['pagina'] ?? 1));
 $q = trim((string) ($_GET['q'] ?? ''));
+if (preg_match('/^(?:pp)?\s*(\d{3,})$/i', $q, $m)) {
+    $porCodigo = anuncio_por_codigo('PP' . $m[1]);
+    if ($porCodigo && $porCodigo['status'] === 'publicado' && (cidade($porCodigo['cidade'])['ativa'] ?? false)) redirect(anuncio_url($porCodigo));
+}
 $qn = str_replace('-', ' ', slugify($q));
 
 $list = array_values(array_filter($all, function ($a) use ($cidadeSlug, $segs, $min, $max, $qn) {

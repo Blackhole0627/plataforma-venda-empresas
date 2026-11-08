@@ -60,6 +60,10 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
                 <div class="field"><label for="aluguel">Aluguel + cond.</label><input class="input" id="aluguel" data-mask="money"></div>
                 <div class="field"><label for="estoque">Estoque</label><input class="input" id="estoque" data-mask="money"></div>
               </div>
+              <div class="grid-2">
+                <div class="field"><label for="bens">Valor estimado dos bens incluídos</label><input class="input" id="bens" data-mask="money"></div>
+              </div>
+              <label class="switch"><span><strong>Aceita proposta</strong></span><input type="checkbox" id="aceitaProposta"></label>
             </section>
 
             <section class="adm-panel"><h2><i data-lucide="images"></i>Fotos <span class="muted" id="foto-count" style="font-weight:500;font-size:.88rem"></span></h2>
@@ -120,6 +124,7 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
         $('marca').checked = !!src.marca; $('preco').value = moneyIn(src.preco); $('faturamento').value = moneyIn(src.faturamento);
         $('margem').value = src.margem || ''; $('folha').value = moneyIn(src.folha); $('aluguel').value = moneyIn(src.aluguel);
         $('estoque').value = moneyIn(src.estoque); $('destaque').checked = !!src.destaque;
+        $('bens').value = moneyIn(src.bens); $('aceitaProposta').checked = !!src.aceitaProposta;
         fotos = (src.fotos || []).slice();
         if (!fotos.length && src.segmento && src.fotoTipo === 'ilustrativas') fotos = PP.segFotos(src.segmento);
       }
@@ -182,6 +187,7 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
           cnpj: $('cnpj').value, marca: $('marca').checked, preco: PP.unmoney($('preco').value), faturamento: PP.unmoney($('faturamento').value),
           margem: Number($('margem').value) || 0, folha: PP.unmoney($('folha').value), aluguel: PP.unmoney($('aluguel').value),
           estoque: PP.unmoney($('estoque').value), destaque: $('destaque').checked, fotos: fotos.slice(),
+          bens: PP.unmoney($('bens').value), aceitaProposta: $('aceitaProposta').checked,
           fotoTipo: fotos.length && fotos.every(f => f.startsWith('u:')) ? 'ilustrativas' : 'reais'
         };
       }

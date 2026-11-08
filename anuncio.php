@@ -24,6 +24,8 @@ $consultor = consultor_para($cid['uf'] ?? '');
 $waText = 'Olá! Tenho interesse no anúncio ' . $a['codigo'] . ' (' . $s['nome'] . ' em ' . $where . ', ' . money($a['preco']) . '). Pode me passar mais informações?';
 $anos = $a['fundacao'] ? (int) date('Y') - $a['fundacao'] : null;
 $bairroWhere = ($a['bairro'] ? $a['bairro'] . ', ' : '') . $where;
+/* map shows the bairro only, never the street */
+$mapaUrl = 'https://maps.google.com/maps?q=' . rawurlencode(($a['bairro'] ? $a['bairro'] . ', ' : '') . ($cid ? $cid['nome'] . ' - ' . $cid['uf'] : $a['cidade']) . ', Brasil') . '&z=14&output=embed';
 
 $similares = array_slice(array_values(array_filter(anuncios_publicados(),
     fn($x) => $x['id'] !== $a['id'] && ($x['segmento'] === $a['segmento'] || $x['cidade'] === $a['cidade']))), 0, 3);
@@ -93,13 +95,20 @@ $gal = array_slice($fotos, 0, 3);
         <?= $item('wallet', 'Folha de pagamento', money($a['folha'])) ?>
         <?= $item('home', 'Aluguel + condomínio', $a['aluguel'] ? money($a['aluguel']) : 'Imóvel próprio') ?>
         <?= $item('package', 'Estoque atual', $a['estoque'] ? money($a['estoque']) : 'Sem estoque') ?>
+        <?= $a['bens'] ? $item('armchair', 'Bens incluídos na venda', money($a['bens'])) : '' ?>
         <?= $item('tag', 'Valor pedido', money($a['preco'])) ?>
+        <?= $item('handshake', 'Aceita proposta', $a['aceitaProposta'] ? 'Sim' : 'Não') ?>
       </div></section>
+      <section class="panel"><h2><?= ic('map') ?>Localização</h2>
+        <div class="map-embed"><iframe src="<?= h($mapaUrl) ?>" title="Mapa do bairro <?= h($bairroWhere) ?>" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+        <p class="muted" style="margin:10px 0 0;font-size:.88rem">O mapa mostra só o bairro. O endereço é passado pela equipe pra quem tem interesse de verdade.</p>
+      </section>
       <div class="note"><?= ic('shield-check') ?><span><strong>Por que o nome da empresa não aparece?</strong><br>Pra proteger o vendedor, clientes e funcionários. O nome e o endereço são passados pela nossa equipe só pra compradores interessados de verdade.</span></div>
     </div>
 
     <aside><div class="side-card">
       <span class="price-label">Valor pedido</span><div class="price"><?= money($a['preco']) ?></div>
+      <?php if ($a['aceitaProposta']): ?><span class="tag green" style="margin:-4px 0 14px;align-self:flex-start"><?= ic('handshake') ?>Aceita proposta</span><?php endif; ?>
       <a class="btn btn-wa btn-lg" href="<?= h(whatsapp_url($waText)) ?>" target="_blank" rel="noopener"><?= ic('message-circle') ?>Tenho interesse</a>
       <a class="btn btn-outline" href="/contato?anuncio=<?= rawurlencode($a['codigo']) ?>" rel="nofollow"><?= ic('mail') ?>Enviar mensagem</a>
       <ul class="side-list">
@@ -107,6 +116,7 @@ $gal = array_slice($fotos, 0, 3);
         <li><span>Segmento</span><strong><?= h($s['nome']) ?></strong></li>
         <li><span>Local</span><strong><?= h($bairroWhere) ?></strong></li>
         <li><span>Faturamento/mês</span><strong><?= money($a['faturamento']) ?></strong></li>
+        <?php if ($a['area']): ?><li><span>Área</span><strong><?= num($a['area']) ?> m²</strong></li><?php endif; ?>
       </ul>
       <?php if ($consultor): ?><div class="consultant"><img class="avatar" src="<?= h(photo_url($consultor['foto'], 120)) ?>" alt="<?= h($consultor['nome']) ?>" loading="lazy"><div><strong><?= h($consultor['nome']) ?></strong><span><?= h($consultor['cargo']) ?></span></div></div><?php endif; ?>
     </div></aside></div>

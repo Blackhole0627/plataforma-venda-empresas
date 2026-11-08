@@ -37,7 +37,7 @@ function cidade_label(string $slug): string
 
 /* ---------- anúncios ---------- */
 const ANUNCIO_FIELDS = ['segmento', 'cidade', 'bairro', 'descricao', 'fundacao', 'funcionarios', 'area', 'horario',
-    'venda_cnpj', 'marca', 'preco', 'faturamento', 'margem', 'folha', 'aluguel', 'estoque', 'destaque', 'foto_tipo', 'fotos'];
+    'venda_cnpj', 'marca', 'preco', 'faturamento', 'margem', 'folha', 'aluguel', 'estoque', 'bens', 'aceita_proposta', 'destaque', 'foto_tipo', 'fotos'];
 
 function anuncio_js(array $r): array
 {
@@ -48,6 +48,7 @@ function anuncio_js(array $r): array
         'area' => (int) $r['area'], 'horario' => $r['horario'], 'cnpj' => $r['venda_cnpj'], 'marca' => (bool) $r['marca'],
         'preco' => (int) $r['preco'], 'faturamento' => (int) $r['faturamento'], 'margem' => (float) $r['margem'],
         'folha' => (int) $r['folha'], 'aluguel' => (int) $r['aluguel'], 'estoque' => (int) $r['estoque'],
+        'bens' => (int) $r['bens'], 'aceitaProposta' => (bool) $r['aceita_proposta'],
         'destaque' => (bool) $r['destaque'], 'fotoTipo' => $r['foto_tipo'],
         'fotos' => json_decode($r['fotos'] ?: '[]', true) ?: [],
         'cadastroId' => $r['cadastro_id'] ? (int) $r['cadastro_id'] : null,
@@ -109,6 +110,8 @@ function anuncio_salvar(array $d): array
         'folha' => max(0, (int) ($d['folha'] ?? 0)),
         'aluguel' => max(0, (int) ($d['aluguel'] ?? 0)),
         'estoque' => max(0, (int) ($d['estoque'] ?? 0)),
+        'bens' => max(0, (int) ($d['bens'] ?? 0)),
+        'aceita_proposta' => !empty($d['aceitaProposta']) ? 1 : 0,
         'destaque' => !empty($d['destaque']) ? 1 : 0,
         'fotos' => json_encode(fotos_limpas($d['fotos'] ?? []), JSON_UNESCAPED_SLASHES),
     ];
@@ -188,12 +191,16 @@ function cadastro_js(array $r): array
     return [
         'id' => (int) $r['id'], 'protocolo' => $r['protocolo'], 'status' => $r['status'],
         'responsavel' => ['nome' => $r['resp_nome'], 'email' => $r['resp_email'], 'whatsapp' => $r['resp_whatsapp']],
-        'empresa' => ['nome' => $r['empresa_nome'], 'cnpj' => $r['empresa_cnpj']],
+        'empresa' => ['nome' => $r['empresa_nome'], 'cnpj' => $r['empresa_cnpj'], 'razaoSocial' => $r['razao_social'],
+            'instagram' => $r['instagram'], 'site' => $r['site_empresa']],
+        'endereco' => ['cep' => $r['cep'], 'rua' => $r['rua'], 'numero' => $r['numero'], 'complemento' => $r['complemento']],
         'segmento' => $r['segmento'], 'cidade' => $r['cidade'] ?: '', 'cidadeOutra' => $r['cidade_outra'] ?: '',
         'bairro' => $r['bairro'], 'fundacao' => (int) $r['fundacao'], 'funcionarios' => (int) $r['funcionarios'],
         'area' => (int) $r['area'], 'horario' => $r['horario'], 'descricao' => $r['descricao'],
         'preco' => (int) $r['preco'], 'faturamento' => (int) $r['faturamento'], 'margem' => (float) $r['margem'],
         'folha' => (int) $r['folha'], 'aluguel' => (int) $r['aluguel'], 'estoque' => (int) $r['estoque'],
+        'bens' => (int) $r['bens'], 'energiaSolar' => (bool) $r['energia_solar'], 'imovel' => $r['imovel'],
+        'aceitaProposta' => (bool) $r['aceita_proposta'], 'aceiteComissao' => (bool) $r['aceite_comissao'],
         'cnpj' => $r['venda_cnpj'], 'marca' => (bool) $r['marca'], 'motivo' => $r['motivo'],
         'fotoTipo' => $r['foto_tipo'], 'fotos' => json_decode($r['fotos'] ?: '[]', true) ?: [],
         'anuncioId' => $r['anuncio_id'] ? (int) $r['anuncio_id'] : null,

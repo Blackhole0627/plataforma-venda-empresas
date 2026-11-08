@@ -22,6 +22,13 @@ $r = [
     'resp_whatsapp' => $str($d['responsavel']['whatsapp'] ?? '', 30),
     'empresa_nome' => $str($d['empresa']['nome'] ?? '', 160),
     'empresa_cnpj' => $str($d['empresa']['cnpj'] ?? '', 20),
+    'razao_social' => $str($d['empresa']['razaoSocial'] ?? '', 160),
+    'instagram' => $str($d['empresa']['instagram'] ?? ''),
+    'site_empresa' => $str($d['empresa']['site'] ?? '', 190),
+    'cep' => $str($d['endereco']['cep'] ?? '', 9),
+    'rua' => $str($d['endereco']['rua'] ?? ''),
+    'numero' => $str($d['endereco']['numero'] ?? '', 20),
+    'complemento' => $str($d['endereco']['complemento'] ?? '', 80),
     'segmento' => (string) ($d['segmento'] ?? ''),
     'cidade' => (string) ($d['cidade'] ?? ''),
     'cidade_outra' => $str($d['cidadeOutra'] ?? '', 120),
@@ -37,6 +44,11 @@ $r = [
     'folha' => $int($d['folha'] ?? 0),
     'aluguel' => $int($d['aluguel'] ?? 0),
     'estoque' => $int($d['estoque'] ?? 0),
+    'bens' => $int($d['bens'] ?? 0),
+    'energia_solar' => !empty($d['energiaSolar']) ? 1 : 0,
+    'imovel' => in_array($d['imovel'] ?? '', ['proprio', 'alugado'], true) ? $d['imovel'] : '',
+    'aceita_proposta' => !empty($d['aceitaProposta']) ? 1 : 0,
+    'aceite_comissao' => !empty($d['aceiteComissao']) ? 1 : 0,
     'venda_cnpj' => in_array($d['cnpj'] ?? '', VENDA_CNPJ, true) ? $d['cnpj'] : 'Indiferente',
     'marca' => !empty($d['marca']) ? 1 : 0,
     'motivo' => $str($d['motivo'] ?? '', 2000),
@@ -56,11 +68,17 @@ if ($r['cidade'] !== '') {
     $r['cidade_outra'] = '';
 } elseif (mb_strlen($r['cidade_outra']) < 3) $erros[] = 'cidade';
 if ($r['cidade'] === '') $r['cidade'] = null;
+if (mb_strlen($r['razao_social']) < 2) $erros[] = 'razão social';
+if (strlen(preg_replace('/\D/', '', $r['cep'])) !== 8) $erros[] = 'CEP';
+if (mb_strlen($r['rua']) < 3) $erros[] = 'rua';
+if ($r['numero'] === '') $erros[] = 'número';
 if (mb_strlen($r['bairro']) < 2) $erros[] = 'bairro';
+if ($r['imovel'] === '') $erros[] = 'imóvel próprio ou alugado';
 if ($r['fundacao'] < 1900 || $r['fundacao'] > (int) date('Y')) $erros[] = 'ano de fundação';
 if (mb_strlen($r['descricao']) < 30) $erros[] = 'descrição';
 if ($r['preco'] <= 0) $erros[] = 'valor pedido';
 if ($r['faturamento'] <= 0) $erros[] = 'faturamento';
+if (!$r['aceite_comissao']) $erros[] = 'aceite da comissão';
 if ($erros) json_error('Confira: ' . implode(', ', $erros) . '.', 422);
 
 $files = array_slice(arquivos('fotos'), 0, 15);

@@ -23,6 +23,15 @@ admin_head($c ? 'Cadastro ' . $c['protocolo'] : 'Cadastro', 'cadastros');
         if (!c) { $('content').innerHTML = '<div class="adm-empty">' + ic('search-x') + '<p>Cadastro não encontrado.</p><a class="btn btn-primary" href="/admin/">Voltar</a></div>'; PP.icons(); return; }
         const kv = (l, v, wide) => '<div' + (wide ? ' class="wide"' : '') + '><span>' + l + '</span><strong>' + esc(v === '' || v == null ? '-' : v) + '</strong></div>';
         const phone = c.responsavel.whatsapp.replace(/\D/g, '');
+        // Instagram and site come from the seller, so only http(s) links are made clickable
+        const link = (l, v) => {
+          if (!v) return kv(l, '');
+          let u = v.trim();
+          if (l === 'Instagram' && !/^https?:/i.test(u)) u = 'https://instagram.com/' + u.replace(/^@/, '').replace(/^(www\.)?instagram\.com\//i, '');
+          else if (!/^https?:\/\//i.test(u)) u = 'https://' + u;
+          if (!/^https?:\/\/[^\s"'<>]+$/i.test(u)) return kv(l, v);
+          return '<div><span>' + l + '</span><strong><a href="' + esc(u) + '" target="_blank" rel="noopener nofollow">' + esc(v) + '</a></strong></div>';
+        };
         const anuncio = c.anuncioId ? Store.anuncio(c.anuncioId) : null;
 
         $('content').innerHTML =
@@ -37,15 +46,20 @@ admin_head($c ? 'Cadastro ' . $c['protocolo'] : 'Cadastro', 'cadastros');
 
           '<div class="adm-grid"><div>' +
             '<section class="adm-panel"><h2>' + ic('building-2') + 'Empresa</h2><div class="kv">' +
-              kv('Nome', c.empresa.nome) + kv('CNPJ', c.empresa.cnpj || 'Não informado') + kv('Segmento', PP.seg(c.segmento).nome) +
-              kv('Cidade', c.cidade ? PP.cidadeLabel(c.cidade) : c.cidadeOutra + ' (não cadastrada)') + kv('Bairro', c.bairro) + kv('Fundação', c.fundacao) +
+              kv('Nome', c.empresa.nome) + kv('Razão social', c.empresa.razaoSocial) + kv('CNPJ', c.empresa.cnpj || 'Não informado') + kv('Segmento', PP.seg(c.segmento).nome) +
+              kv('Cidade', c.cidade ? PP.cidadeLabel(c.cidade) : c.cidadeOutra + ' (não cadastrada)') + kv('Bairro', c.bairro) +
+              kv('Endereço', A.enderecoTexto(c), true) + kv('Fundação', c.fundacao) +
               kv('Funcionários', c.funcionarios) + kv('Área', c.area ? c.area + ' m²' : '') + kv('Horário', c.horario) +
+              kv('Imóvel', A.imovelTexto(c.imovel)) + kv('Energia solar', c.energiaSolar ? 'Sim' : 'Não') +
+              link('Instagram', c.empresa.instagram) + link('Site', c.empresa.site) +
               kv('Descrição', c.descricao, true) +
             '</div></section>' +
             '<section class="adm-panel"><h2>' + ic('bar-chart-3') + 'Valores</h2><div class="kv">' +
               kv('Valor pedido', money(c.preco)) + kv('Faturamento/mês', money(c.faturamento)) + kv('Margem', c.margem ? c.margem + '%' : '') +
               kv('Folha', money(c.folha)) + kv('Aluguel + cond.', money(c.aluguel)) + kv('Estoque', money(c.estoque)) +
+              kv('Equipamentos, móveis e instalações', money(c.bens)) + kv('Aceita proposta', c.aceitaProposta ? 'Sim' : 'Não') +
               kv('Venda com CNPJ', c.cnpj) + kv('Marca inclusa', c.marca ? 'Sim' : 'Não') +
+              kv('Aceitou a comissão', c.aceiteComissao ? 'Sim' : 'Não') +
               kv('Motivo da venda (interno)', c.motivo, true) +
             '</div></section>' +
             '<section class="adm-panel"><h2>' + ic('images') + 'Fotos <span class="muted" style="font-weight:500;font-size:.88rem">(' + (c.fotoTipo === 'ilustrativas' ? 'pediu fotos ilustrativas' : c.fotos.length + ' enviadas') + ')</span></h2>' +

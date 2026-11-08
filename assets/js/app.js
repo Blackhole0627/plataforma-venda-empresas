@@ -132,6 +132,10 @@
       return v.replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
         .replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2');
     },
+    cep(v) {
+      v = v.replace(/\D/g, '').slice(0, 8);
+      return v.length > 5 ? v.slice(0, 5) + '-' + v.slice(5) : v;
+    },
     money(v) {
       v = v.replace(/\D/g, '').replace(/^0+/, '').slice(0, 11);
       return v ? 'R$ ' + Number(v).toLocaleString('pt-BR') : '';

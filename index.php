@@ -37,7 +37,6 @@ site_header('home');
       <div class="container hero-inner">
         <span class="eyebrow"><?= ic('shield-check') ?> Anúncios confidenciais nas capitais do Brasil</span>
         <h1>Compre ou venda sua empresa com <em>sigilo e segurança</em></h1>
-        <p class="lead">Negócios prontos para começar a faturar no dia seguinte. O nome da empresa fica guardado e só quem tem interesse de verdade fala com a nossa equipe.</p>
 
         <form class="search-box" id="search-form" action="/comprar-empresa">
           <div class="sb-field">
@@ -62,8 +61,14 @@ site_header('home');
               <option value="1500000-">Acima de R$ 1,5 mi</option>
             </select>
           </div>
+          <div class="sb-field">
+            <label for="sb-codigo">Código</label>
+            <input id="sb-codigo" name="codigo" placeholder="Ex.: PP1101" autocomplete="off" spellcheck="false">
+          </div>
           <button class="btn btn-primary btn-lg" type="submit"><?= ic('search') ?> Buscar</button>
         </form>
+
+        <p class="lead">Negócios prontos para começar a faturar no dia seguinte. O nome da empresa fica guardado e só quem tem interesse de verdade fala com a nossa equipe.</p>
 
         <div class="hero-trust">
           <span><?= ic('lock') ?> Nome da empresa em sigilo</span>
@@ -241,6 +246,8 @@ site_header('home');
     document.getElementById('search-form').addEventListener('submit', function (e) {
       e.preventDefault();
       var f = new FormData(e.target), p = new URLSearchParams(), cidade = f.get('cidade');
+      var cod = String(f.get('codigo') || '').trim();
+      if (cod) { location.href = '/comprar-empresa?q=' + encodeURIComponent(cod); return; }
       if (f.get('segmento')) p.set('segmento', f.get('segmento'));
       var v = f.get('valor');
       if (v) { var r = v.split('-'); if (r[0] && r[0] !== '0') p.set('min', r[0]); if (r[1]) p.set('max', r[1]); }

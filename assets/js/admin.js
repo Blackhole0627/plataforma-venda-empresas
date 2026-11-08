@@ -62,18 +62,30 @@
       'Protocolo: ' + c.protocolo,
       'Responsável: ' + c.responsavel.nome + ' | ' + c.responsavel.whatsapp + ' | ' + c.responsavel.email,
       'Empresa: ' + c.empresa.nome + (c.empresa.cnpj ? ' | CNPJ ' + c.empresa.cnpj : ''),
+      'Razão social: ' + (c.empresa.razaoSocial || '-'),
+      'Endereço: ' + enderecoTexto(c),
+      'Instagram: ' + (c.empresa.instagram || '-') + ' | Site: ' + (c.empresa.site || '-'),
       'Segmento: ' + PP.seg(c.segmento).nome,
       'Cidade: ' + (c.cidade ? PP.cidadeLabel(c.cidade) : c.cidadeOutra) + ' | Bairro: ' + c.bairro,
       'Fundação: ' + c.fundacao + ' | Funcionários: ' + c.funcionarios + ' | Área: ' + c.area + ' m²',
       'Horário: ' + (c.horario || '-'),
       'Valor pedido: ' + m(c.preco) + ' | Faturamento/mês: ' + m(c.faturamento) + ' | Margem: ' + (c.margem || '-') + '%',
       'Folha: ' + m(c.folha) + ' | Aluguel: ' + m(c.aluguel) + ' | Estoque: ' + m(c.estoque),
+      'Equipamentos, móveis e instalações: ' + m(c.bens) + ' | Aceita proposta: ' + (c.aceitaProposta ? 'Sim' : 'Não'),
+      'Imóvel: ' + imovelTexto(c.imovel) + ' | Energia solar: ' + (c.energiaSolar ? 'Sim' : 'Não') + ' | Aceitou a comissão: ' + (c.aceiteComissao ? 'Sim' : 'Não'),
       'Venda com CNPJ: ' + c.cnpj + ' | Marca inclusa: ' + (c.marca ? 'Sim' : 'Não'),
       'Motivo: ' + (c.motivo || '-'),
       'Descrição: ' + c.descricao,
       'Fotos: ' + (c.fotoTipo === 'ilustrativas' ? 'ilustrativas' : c.fotos.length + ' foto(s) enviadas')
     ].join('\n');
   }
+
+  function enderecoTexto(c) {
+    const e = c.endereco || {};
+    if (!e.rua) return '-';
+    return e.rua + ', ' + e.numero + (e.complemento ? ' ' + e.complemento : '') + ' · ' + c.bairro + ' · CEP ' + e.cep;
+  }
+  function imovelTexto(v) { return v === 'proprio' ? 'Próprio' : v === 'alugado' ? 'Alugado' : '-'; }
 
   /* runs an async action with the button disabled; shows the error as a toast */
   async function busy(btn, fn) {
@@ -83,6 +95,6 @@
     finally { if (btn) btn.disabled = false; }
   }
 
-  Object.assign(PP, { Admin: { STATUS, statusPill, cadastroTexto, busy } });
+  Object.assign(PP, { Admin: { STATUS, statusPill, cadastroTexto, enderecoTexto, imovelTexto, busy } });
   document.addEventListener('DOMContentLoaded', () => { shell(); PP.icons(); });
 })();
