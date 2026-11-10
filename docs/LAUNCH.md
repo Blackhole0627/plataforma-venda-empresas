@@ -2,17 +2,21 @@
 
 Everything except the client's data is ready. Follow this from top to bottom. The team guide and the handoff message are in [guia-da-equipe.md](guia-da-equipe.md).
 
-## Where things stand (Nov 8)
+## Where things stand (Nov 10)
 
-The site is installed on Tiago's Hostinger plan (Premium Web Hosting, server in Brazil) at the temporary address `whitesmoke-woodcock-645852.hostingersite.com`. We use collaborator access, which can't buy anything, so Tiago buys the domain himself.
+The site runs on Tiago's Hostinger plan (Premium Web Hosting, server in Brazil) at **https://portalempresasavenda.com.br**. Tiago bought the domain himself and Hostinger created a separate site entry for it, so the files live in that site's `public_html`. We use collaborator access, which can't buy anything.
 
+- The old temporary address `whitesmoke-woodcock-645852.hostingersite.com` only holds a `.htaccess` that redirects everything to the domain. Its old copy of the files is still there but never served.
+- `www.` redirects to the bare domain (rule in `.htaccess`).
 - Database `u744671728_empresas`, user `u744671728_site`. The password is only in `public_html/config.php` on the server.
 - PHP 8.3. Hostinger already redirects http to https, so the HTTPS lines in `.htaccess` can stay commented.
-- `install.php` is already deleted and the smoke test passes. The 20 sample listings are loaded so Tiago can review. Delete them before launch.
-- The first team login is Tiago's email.
-- To update files, use hPanel → Arquivos → Gerenciador de arquivos. Its Extract button didn't work for us, so upload the files themselves, not the zip. Never leave a zip with `config.php` inside `public_html`.
+- The Nov 10 migration added `cidades.instagram` and the `ajustes` table on the live database. A fresh install gets both from `inc/schema.sql`.
+- The 20 sample listings are still loaded so Tiago can review. Delete them before launch.
+- The first team login is Tiago's email. `notificar_email` is his Gmail for now.
+- To update files, use hPanel, open the site's Arquivos then Gerenciador de arquivos, and upload single files. Its Extract button didn't work for us. Never leave a zip with `config.php` inside `public_html`. The File Manager API needs the `jwt` of the site you opened last, because both sites share one login token in the browser.
+- Hostinger's CDN shows a "Checking your browser" page to headless test browsers after many requests. Run the browser tests from a normal browser profile or wait a few minutes.
 
-Still to do: connect the domain (Domínios → Conectar domínio on the site's dashboard) and change `site_url`. Then create the mailbox and set `email_remetente` and `notificar_email`. Fill in the contacts and team in `config.php`, delete the sample listings, and run steps 6 and 7.
+**Still waiting on Tiago:** the mailbox `contato@portalempresasavenda.com.br` (Hostinger asks for a payment method even for the free email, so only Tiago can activate it in E-mails), the list of new segments, opening hours, team photo, when the commission is paid, and the Pixel or GA ID if he wants tracking. Then delete the sample listings, set `'indexar' => true` and run steps 6 and 7.
 
 ## 1. What we need from Tiago
 
