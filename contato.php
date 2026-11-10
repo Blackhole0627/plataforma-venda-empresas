@@ -56,7 +56,7 @@ site_header('contato');
         <div class="contact-card"><span class="cc-icon"><i data-lucide="clock"></i></span><div><small>Atendimento</small><strong><?= h(cfg('horario')) ?></strong></div></div>
         <div class="contact-card" style="flex-direction:column;align-items:flex-start;gap:12px">
           <small class="muted" style="font-weight:600">Nossos consultores</small>
-          <div class="avatar-stack"><?php foreach (equipe() as $p): ?><img src="<?= h(photo_url($p['foto'], 100)) ?>" alt="<?= h($p['nome']) ?>" title="<?= h($p['nome']) ?>"><?php endforeach; ?></div>
+          <div class="avatar-stack"><?php foreach (equipe() as $p) echo avatar($p, 100, "av"); ?></div>
           <span class="muted" style="font-size:.9rem">Um consultor da sua região vai te atender.</span>
         </div>
       </aside>

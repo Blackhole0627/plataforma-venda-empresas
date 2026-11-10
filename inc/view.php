@@ -58,6 +58,10 @@ function page_head(array $m): void
   <link rel="stylesheet" href="<?= asset('/assets/css/admin.css') ?>">
 <?php endif; ?>
   <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js" defer></script>
+<?php $track = array_filter(['pixel' => preg_replace('/\D/', '', (string) cfg('meta_pixel', '')), 'ga' => preg_replace('/[^A-Z0-9-]/', '', strtoupper((string) cfg('ga_id', '')))]);
+  if ($track && !$admin): ?>
+  <script>window.PP_TRACK = <?= json_encode($track) ?>;</script>
+<?php endif; ?>
 <?php foreach ($m['jsonld'] ?? [] as $ld): ?>
   <script type="application/ld+json"><?= json_encode($ld, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) ?></script>
 <?php endforeach; ?>
@@ -95,7 +99,7 @@ function site_footer(): void
 <footer id="site-footer" class="site-footer">
   <div class="container footer-grid">
     <div class="footer-brand"><?= logo(true) ?>
-      <p>Plataforma para comprar e vender empresas com sigilo. Seu negócio anunciado sem expor o nome, e só compradores interessados de verdade chegam até você.</p>
+      <p>Plataforma de compra e venda de empresas com sigilo. O nome do seu negócio não aparece no anúncio, e os compradores são qualificados pela nossa equipe.</p>
       <div class="footer-social">
         <a href="<?= h(whatsapp_url('Olá! Vim pelo site.')) ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><?= ic('message-circle') ?></a>
         <?php if ($insta): ?><a href="<?= h($insta) ?>" target="_blank" rel="noopener" aria-label="Instagram"><?= ic('instagram') ?></a><?php endif; ?>
@@ -105,7 +109,6 @@ function site_footer(): void
     <div><h4>Navegação</h4><ul>
       <li><a href="/comprar-empresa">Comprar empresa</a></li>
       <li><a href="/vender-empresa">Vender empresa</a></li>
-      <li><a href="/cadastro">Anunciar minha empresa</a></li>
       <li><a href="/contato">Contato</a></li>
       <li><a href="/admin/" rel="nofollow">Área da equipe</a></li>
     </ul></div>
@@ -138,13 +141,13 @@ function card(array $a): string
         ($a['destaque'] ? '<span class="badge-destaque">' . ic('star') . 'Destaque</span>' : '') .
         '</a>' .
         '<div class="card-body">' .
-        '<div class="card-top"><span class="card-code">Cód. ' . h($a['codigo']) . '</span><span class="card-date">' . time_ago($a['data']) . '</span></div>' .
+        '<div class="card-top"><button type="button" class="card-code" data-copy="' . h($a['codigo']) . '" title="Copiar código">Cód. ' . h($a['codigo']) . ic('copy') . '</button><span class="card-date">' . time_ago($a['data']) . '</span></div>' .
         '<h3 class="card-title"><a href="' . $url . '">' . h($s['nome']) . ' à venda</a></h3>' .
         '<p class="card-loc">' . ic('map-pin') . h(($a['bairro'] ? $a['bairro'] . ', ' : '') . $where) . '</p>' .
         '<div class="card-stats">' .
-        '<span title="Faturamento médio mensal">' . ic('trending-up') . money_short($a['faturamento']) . '/mês</span>' .
+        '<span class="cs-fat">' . ic('trending-up') . 'Faturamento (mês) <strong>' . money_short($a['faturamento']) . '</strong></span>' .
         '<span title="Funcionários">' . ic('users') . (int) $a['funcionarios'] . ' func.</span>' .
-        '<span title="Área">' . ic('ruler') . num($a['area']) . ' m²</span>' .
+        ($a['area'] ? '<span title="Área">' . ic('ruler') . num($a['area']) . ' m²</span>' : '') .
         '</div>' .
         '<div class="card-foot"><span class="card-price">' . money($a['preco']) . '</span>' .
         '<a class="card-link" href="' . $url . '">Ver detalhes ' . ic('arrow-right') . '</a></div>' .
@@ -154,6 +157,15 @@ function card(array $a): string
 function equipe(): array
 {
     return cfg('equipe', []);
+}
+
+/* team photo, or a circle with initials when there is no photo yet */
+function avatar(array $p, int $w = 120, string $cls = 'avatar'): string
+{
+    if (!empty($p['foto'])) return '<img class="' . $cls . '" src="' . h(photo_url($p['foto'], $w)) . '" alt="' . h($p['nome']) . '" loading="lazy">';
+    $parts = preg_split('/\s+/', trim($p['nome']));
+    $ini = mb_strtoupper(mb_substr($parts[0], 0, 1) . (count($parts) > 1 ? mb_substr(end($parts), 0, 1) : ''));
+    return '<span class="' . $cls . ' avatar-ini" aria-hidden="true">' . h($ini) . '</span>';
 }
 
 function consultor_para(string $uf): ?array
@@ -182,7 +194,7 @@ function page_scripts(array $data = [], bool $admin = false): void
         'segmentos' => SEGMENTOS,
         'ufs' => UFS,
         'imagens' => IMAGENS,
-        'equipe' => array_map(fn($p) => ['nome' => $p['nome'], 'cargo' => $p['cargo'], 'foto' => $p['foto']], equipe()),
+        'equipe' => array_map(fn($p) => ['nome' => $p['nome'], 'cargo' => $p['cargo'], 'foto' => $p['foto'] ?? ''], equipe()),
         'cidades' => cidades(!$admin),
     ], $data);
     echo '<script>window.PP_BOOT = ' . json_encode($boot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP) . ';</script>' . "\n";

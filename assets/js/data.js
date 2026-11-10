@@ -67,6 +67,7 @@
     async setCadastroStatus(id, status) { const r = await admin('cadastro.status', { id, status }); return upsert(cadastros, r.cadastro); },
     async addCidade(nome, uf) { const r = await admin('cidade.adicionar', { nome, uf }); cidades.push(r.cidade); return r.cidade; },
     async toggleCidade(slug) { const r = await admin('cidade.alternar', { slug }); Object.assign(Store.cidade(slug), r.cidade); return r.cidade; },
+    async setInstagram(slug, instagram) { const r = await admin('cidade.instagram', { slug, instagram }); Object.assign(Store.cidade(slug), r.cidade); return r.cidade; },
     async removeCidade(slug) { await admin('cidade.remover', { slug }); const i = cidades.findIndex(c => c.slug === slug); if (i >= 0) cidades.splice(i, 1); },
     async uploadFoto(blob) { const f = new FormData(); f.append('action', 'foto.enviar'); f.append('foto', blob, 'foto.jpg'); return (await api('/admin/api', f)).path; }
   };

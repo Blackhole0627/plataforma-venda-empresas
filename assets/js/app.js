@@ -62,13 +62,13 @@
           (a.destaque ? '<span class="badge-destaque">' + ic('star') + 'Destaque</span>' : '') +
         '</a>' +
         '<div class="card-body">' +
-          '<div class="card-top"><span class="card-code">Cód. ' + esc(a.codigo) + '</span><span class="card-date">' + timeAgo(a.data) + '</span></div>' +
+          '<div class="card-top"><button type="button" class="card-code" data-copy="' + esc(a.codigo) + '" title="Copiar código">Cód. ' + esc(a.codigo) + ic('copy') + '</button><span class="card-date">' + timeAgo(a.data) + '</span></div>' +
           '<h3 class="card-title"><a href="' + anuncioUrl(a) + '">' + esc(s.nome) + ' à venda</a></h3>' +
           '<p class="card-loc">' + ic('map-pin') + esc(a.bairro ? a.bairro + ', ' : '') + esc(cidadeLabel(a.cidade)) + '</p>' +
           '<div class="card-stats">' +
-            '<span title="Faturamento médio mensal">' + ic('trending-up') + moneyShort(a.faturamento) + '/mês</span>' +
+            '<span class="cs-fat">' + ic('trending-up') + 'Faturamento (mês) <strong>' + moneyShort(a.faturamento) + '</strong></span>' +
             '<span title="Funcionários">' + ic('users') + a.funcionarios + ' func.</span>' +
-            '<span title="Área">' + ic('ruler') + num(a.area) + ' m²</span>' +
+            (a.area ? '<span title="Área">' + ic('ruler') + num(a.area) + ' m²</span>' : '') +
           '</div>' +
           '<div class="card-foot"><span class="card-price">' + money(a.preco) + '</span>' +
           '<a class="card-link" href="' + anuncioUrl(a) + '">Ver detalhes ' + ic('arrow-right') + '</a></div>' +
@@ -177,11 +177,127 @@
     return new Blob([arr], { type: (head.match(/data:(.*?);/) || [])[1] || 'image/jpeg' });
   }
 
+  /* ---------- copy listing code ---------- */
+  function copyText(t) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(t);
+    const ta = document.createElement('textarea');
+    ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    try { document.execCommand('copy'); } finally { ta.remove(); }
+    return Promise.resolve();
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-copy]'); if (!b) return;
+    e.preventDefault();
+    copyText(b.dataset.copy).then(() => toast('Código ' + b.dataset.copy + ' copiado'), () => toast('Não deu pra copiar. O código é ' + b.dataset.copy, 'error'));
+    track('copiar_codigo', { codigo: b.dataset.copy });
+  });
+
+  /* ---------- analytics (Meta Pixel / GA), only after the visitor accepts cookies ---------- */
+  const TRACK = window.PP_TRACK || null;
+  function consent() { try { return localStorage.getItem('pp-cookies'); } catch (e) { return null; } }
+  function loadTracking() {
+    if (!TRACK || window.__ppTrack) return;
+    window.__ppTrack = true;
+    if (TRACK.ga) {
+      const s = document.createElement('script'); s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + TRACK.ga; document.head.appendChild(s);
+      window.dataLayer = window.dataLayer || [];
+      window.gtag = function () { window.dataLayer.push(arguments); };
+      window.gtag('js', new Date()); window.gtag('config', TRACK.ga);
+    }
+    if (TRACK.pixel) {
+      /* standard Meta Pixel loader */
+      !function (f, b, e, v, n, t, s) { if (f.fbq) return; n = f.fbq = function () { n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments); }; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0'; n.queue = []; t = b.createElement(e); t.async = !0; t.src = v; s = b.getElementsByTagName(e)[0]; s.parentNode.insertBefore(t, s); }(window, document, 'script', 'https://connect.facebook.net/en_US/fbevents.js');
+      window.fbq('init', TRACK.pixel); window.fbq('track', 'PageView');
+    }
+  }
+  function track(name, params) {
+    if (window.gtag) window.gtag('event', name, params || {});
+    if (window.fbq) window.fbq('trackCustom', name, params || {});
+  }
+  function cookieBar() {
+    if (!TRACK) return;
+    const c = consent();
+    if (c === 'ok') return loadTracking();
+    if (c === 'no') return;
+    const bar = document.createElement('div');
+    bar.className = 'cookie-bar'; bar.setAttribute('role', 'dialog'); bar.setAttribute('aria-label', 'Cookies');
+    bar.innerHTML = '<p>Usamos cookies pra entender como o site é usado e melhorar os anúncios. Você pode aceitar ou recusar.</p>' +
+      '<div><button class="btn btn-outline btn-sm" data-c="no">Recusar</button><button class="btn btn-primary btn-sm" data-c="ok">Aceitar</button></div>';
+    document.body.appendChild(bar);
+    bar.addEventListener('click', e => {
+      const b = e.target.closest('[data-c]'); if (!b) return;
+      try { localStorage.setItem('pp-cookies', b.dataset.c); } catch (err) { /* private mode */ }
+      bar.remove();
+      if (b.dataset.c === 'ok') loadTracking();
+    });
+  }
+
+  /* ---------- tabs (data-tabs="group"); every group on the page follows the same choice ---------- */
+  function setTab(value, fromClick) {
+    document.querySelectorAll('[data-tab]').forEach(t => {
+      const on = t.dataset.tab === value;
+      t.classList.toggle('active', on); t.setAttribute('aria-selected', on);
+    });
+    document.querySelectorAll('[data-pane]').forEach(p => { p.hidden = p.dataset.pane !== value; });
+    if (fromClick) {
+      track('aba_' + value, {});
+      const u = new URL(location.href);
+      if (value === 'vender') u.searchParams.set('aba', 'vender'); else u.searchParams.delete('aba');
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+    }
+  }
+  function tabs() {
+    if (!document.querySelector('[data-tab]')) return;
+    document.addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) setTab(t.dataset.tab, true); });
+    if (param('aba') === 'vender') setTab('vender');
+  }
+
+  /* ---------- bottom sheet / modal (data-sheet-open="id") ---------- */
+  function sheets() {
+    let last = null;
+    const close = s => { s.classList.remove('open'); s.setAttribute('aria-hidden', 'true'); document.body.classList.remove('sheet-open'); if (last) last.focus(); };
+    document.addEventListener('click', e => {
+      const o = e.target.closest('[data-sheet-open]');
+      if (o) {
+        const s = document.getElementById(o.dataset.sheetOpen); if (!s) return;
+        last = o; s.classList.add('open'); s.setAttribute('aria-hidden', 'false'); document.body.classList.add('sheet-open');
+        const f = s.querySelector('input'); if (f && window.matchMedia('(min-width: 641px)').matches) setTimeout(() => f.focus(), 50);
+        return;
+      }
+      const s = e.target.closest('.sheet');
+      if (s && (e.target.closest('[data-sheet-close]') || e.target === s)) close(s);
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.sheet.open').forEach(close); });
+    document.querySelectorAll('[data-sheet-filter]').forEach(inp => inp.addEventListener('input', () => {
+      const q = PP.slugify(inp.value).replace(/-/g, ' ');
+      const box = document.getElementById(inp.dataset.sheetFilter);
+      box.querySelectorAll('[data-k]').forEach(a => { a.hidden = q && !a.dataset.k.includes(q); });
+      box.querySelectorAll('.sheet-group').forEach(g => { g.hidden = !g.querySelector('[data-k]:not([hidden])'); });
+      const none = box.querySelector('.sheet-none'); if (none) none.hidden = !!box.querySelector('[data-k]:not([hidden])');
+    }));
+  }
+
+  /* ---------- horizontal carousels with arrows (data-carousel) ---------- */
+  function carousels() {
+    document.querySelectorAll('[data-carousel]').forEach(wrap => {
+      const rail = wrap.querySelector(".carousel-track"); if (!rail) return;
+      const prev = wrap.querySelector('[data-dir="-1"]'), next = wrap.querySelector('[data-dir="1"]');
+      const step = () => { const c = rail.querySelector(':scope > *'); return c ? c.getBoundingClientRect().width + 20 : 300; };
+      const upd = () => {
+        if (prev) prev.disabled = rail.scrollLeft < 8;
+        if (next) next.disabled = rail.scrollLeft + rail.clientWidth >= rail.scrollWidth - 8;
+      };
+      [prev, next].forEach(b => b && b.addEventListener('click', () => rail.scrollBy({ left: Number(b.dataset.dir) * step(), behavior: 'smooth' })));
+      rail.addEventListener("scroll", upd, { passive: true }); window.addEventListener('resize', upd); upd();
+    });
+  }
+
   Object.assign(PP, {
     CONFIG, PRETTY, money, moneyShort, num, dateBR, timeAgo, esc, param, seg, cidade, cidadeLabel,
     anuncioSlug, anuncioUrl, cidadeUrl, segmentoUrl, whatsappUrl, icons, ic, card, toast, setMeta, jsonLd,
-    masks, bindMasks, unmoney, resizeImage, dataUrlToBlob, logo
+    masks, bindMasks, unmoney, resizeImage, dataUrlToBlob, logo, track, setTab, copyText
   });
 
-  document.addEventListener('DOMContentLoaded', () => { header(); icons(); });
+  document.addEventListener('DOMContentLoaded', () => { header(); tabs(); sheets(); carousels(); cookieBar(); icons(); });
 })();

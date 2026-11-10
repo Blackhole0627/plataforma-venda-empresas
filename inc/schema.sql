@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS cidades (
   uf CHAR(2) NOT NULL,
   capital TINYINT(1) NOT NULL DEFAULT 0,
   ativa TINYINT(1) NOT NULL DEFAULT 1,
+  instagram VARCHAR(60) NULL,
   criado_em DATETIME NOT NULL,
   UNIQUE KEY uq_cidades_slug (slug)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -124,4 +125,10 @@ CREATE TABLE IF NOT EXISTS login_falhas (
   ip VARCHAR(45) NOT NULL,
   criado_em DATETIME NOT NULL,
   KEY idx_login_falhas (ip, criado_em)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+/* values the team can change in the team area (publication fee, commission) */
+CREATE TABLE IF NOT EXISTS ajustes (
+  chave VARCHAR(60) NOT NULL PRIMARY KEY,
+  valor VARCHAR(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

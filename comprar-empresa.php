@@ -60,6 +60,9 @@ $sub = $cid ? 'Negócios à venda' . $where . ' com faturamento, estrutura e val
 $filtrado = $q !== '' || $page > 1 || count($segs) > 1 || $min || $max < MAXV;
 $canonical = ($cid ? cidade_url($cid['slug']) : '/comprar-empresa') . ($s1 ? '?segmento=' . $s1['slug'] : '');
 
+$ig = $cid ? instagram_da_cidade($cid) : null;
+$igHtml = fn($ig, $cid) => $ig ? '<a class="city-ig" href="' . h($ig['url']) . '" target="_blank" rel="noopener">' . ic('instagram') . '<span>Siga <strong>' . h($ig['handle']) . '</strong> e veja as empresas à venda em ' . h($cid['nome']) . '</span></a>' : '';
+
 $crumbs = [['Início', '/'], ['Comprar empresa', '/comprar-empresa']];
 if ($cid) $crumbs[] = [$cid['nome'] . '/' . $cid['uf'], cidade_url($cid['slug'])];
 $ld = ['@context' => 'https://schema.org', '@type' => 'BreadcrumbList', 'itemListElement' => []];
@@ -83,6 +86,7 @@ site_header('comprar');
         <ol class="breadcrumb" id="crumbs"><li><a href="/">Início</a></li><li><a href="/comprar-empresa">Comprar empresa</a></li><?php if ($cid): ?><li><?= h($cid['nome'] . '/' . $cid['uf']) ?></li><?php endif; ?></ol>
         <h1 id="page-title"><?= h($titulo) ?></h1>
         <p id="page-sub"><?= h($sub) ?></p>
+        <div id="city-ig"><?= $igHtml($ig, $cid) ?></div>
       </div>
     </section>
 
@@ -146,6 +150,22 @@ site_header('comprar');
         <div class="seo-text" id="seo-text"></div>
       </section>
     </div>
+
+    <section class="section section-alt">
+      <div class="container">
+        <div class="section-head center">
+          <span class="kicker">Passo a passo</span>
+          <h2>Comprar uma empresa, passo a passo</h2>
+          <p>Todos os anúncios são revisados pela nossa equipe, e o nome da empresa fica em sigilo.</p>
+        </div>
+        <div class="buy-steps">
+          <div class="tl-step"><span class="tl-icon"><?= ic('sliders-horizontal') ?></span><h3>Escolha</h3><p>Filtre por cidade, segmento e valor e veja os números de cada negócio.</p></div>
+          <div class="tl-step"><span class="tl-icon"><?= ic('message-circle') ?></span><h3>Fale com um consultor</h3><p>Informe o código do anúncio. A equipe conversa com você pra entender o seu perfil.</p></div>
+          <div class="tl-step"><span class="tl-icon"><?= ic('file-check') ?></span><h3>Receba os detalhes completos</h3><p>Após o termo de confidencialidade, liberamos os dados e acompanhamos a negociação até o fechamento.</p></div>
+        </div>
+        <div class="faq-cta"><a class="btn btn-wa btn-lg" href="<?= h(whatsapp_url('Olá! Quero comprar uma empresa e gostaria de falar com um consultor.')) ?>" target="_blank" rel="noopener"><?= ic('message-circle') ?> Falar com um consultor</a></div>
+      </div>
+    </section>
   </main>
 
 <?php site_footer(); page_scripts(['anuncios' => $all]); ?>
@@ -237,6 +257,8 @@ site_header('comprar');
         $('page-sub').textContent = c
           ? 'Negócios à venda' + where + ' com faturamento, estrutura e valores. O nome das empresas fica em sigilo.'
           : 'Negócios prontos para operar. Filtre por segmento, cidade e faixa de valor.';
+        const ig = c && c.slug ? (c.instagram ? { url: 'https://www.instagram.com/' + c.instagram + '/', handle: '@' + c.instagram } : (PP.CONFIG.instagram ? { url: PP.CONFIG.instagram, handle: '@' + (PP.CONFIG.instagram.match(/instagram\.com\/([A-Za-z0-9._]+)/i) || [, 'Instagram'])[1] } : null)) : null;
+        $('city-ig').innerHTML = ig ? '<a class="city-ig" href="' + esc(ig.url) + '" target="_blank" rel="noopener">' + PP.ic('instagram') + '<span>Siga <strong>' + esc(ig.handle) + '</strong> e veja as empresas à venda em ' + esc(c.nome) + '</span></a>' : '';
         PP.setMeta((title === 'Empresas à venda' ? 'Comprar empresa' : title) + ' · ' + PP.CONFIG.marca,
           (s ? s.nome + ' à venda' : 'Empresas à venda') + where + '. Veja valores, faturamento e estrutura de cada negócio e fale com nossa equipe pelo WhatsApp.');
 

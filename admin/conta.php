@@ -1,6 +1,6 @@
 <?php
 require dirname(__DIR__) . '/inc/bootstrap.php';
-$me = admin_head('Equipe e senha', 'conta');
+$me = admin_head('Equipe, valores e senha', 'conta');
 $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER BY nome')->fetchAll();
 ?>
   <div class="adm">
@@ -25,6 +25,13 @@ $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER B
           </div>
 
           <aside>
+            <form class="adm-panel" id="f-valores" novalidate>
+              <h2><?= ic('badge-dollar-sign') ?>Valores do site</h2>
+              <p class="muted" style="font-size:.88rem">Aparecem na página Vender empresa. Mudou aqui, muda no site na hora.</p>
+              <div class="field"><label for="taxa">Taxa de publicação (R$)</label><input class="input" id="taxa" inputmode="numeric" value="<?= h((string) ajuste('taxa_publicacao')) ?>"></div>
+              <div class="field"><label for="comissao">Comissão sobre a venda (%)</label><input class="input" id="comissao" inputmode="decimal" value="<?= h(str_replace('.', ',', (string) ajuste('comissao'))) ?>"></div>
+              <button class="btn btn-primary btn-block" type="submit">Salvar valores</button>
+            </form>
             <form class="adm-panel" id="f-senha" novalidate>
               <h2><?= ic('key-round') ?>Trocar minha senha</h2>
               <div class="field"><label for="atual">Senha atual</label><input class="input" id="atual" type="password" autocomplete="current-password"></div>
@@ -48,6 +55,11 @@ $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER B
     (function () {
       const $ = id => document.getElementById(id), A = PP.Admin;
       const call = (action, data) => PP.api('/admin/api', Object.assign({ action }, data));
+      $('f-valores').addEventListener('submit', async e => {
+        e.preventDefault();
+        const ok = await A.busy(e.target.querySelector('button'), () => call('ajustes.salvar', { taxa_publicacao: $('taxa').value, comissao: $('comissao').value }));
+        if (ok) PP.toast('Valores salvos');
+      });
       $('f-senha').addEventListener('submit', async e => {
         e.preventDefault();
         const ok = await A.busy(e.target.querySelector('button'), () => call('conta.senha', { atual: $('atual').value, nova: $('nova').value }));

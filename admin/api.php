@@ -66,6 +66,26 @@ switch ($action) {
         db()->prepare('DELETE FROM cidades WHERE slug = ?')->execute([$c['slug']]);
         json_out(['ok' => true]);
 
+    case 'cidade.instagram':
+        $c = cidade((string) ($d['slug'] ?? ''));
+        if (!$c) json_error('Cidade não encontrada.', 404);
+        $raw = trim((string) ($d['instagram'] ?? ''));
+        $ig = instagram_handle($raw);
+        if ($raw !== '' && $ig === '') json_error('Esse Instagram não parece certo. Use só o nome da conta, tipo @empresasavenda.df', 422);
+        db()->prepare('UPDATE cidades SET instagram = ? WHERE slug = ?')->execute([$ig ?: null, $c['slug']]);
+        json_out(['cidade' => cidade($c['slug'])]);
+
+    /* ---------- valores ---------- */
+    case 'ajustes.salvar':
+        $num = fn($v) => (float) str_replace(',', '.', str_replace('.', '', preg_replace('/[^\d,.]/', '', (string) $v)));
+        $taxa = (int) round($num($d['taxa_publicacao'] ?? ''));
+        $com = (float) str_replace(',', '.', preg_replace('/[^\d,.]/', '', (string) ($d['comissao'] ?? '')));
+        if ($taxa < 0 || $taxa > 100000) json_error('Confira a taxa de publicação.', 422);
+        if ($com <= 0 || $com > 50) json_error('Confira a comissão. Use um número entre 0,5 e 50.', 422);
+        ajuste_salvar('taxa_publicacao', $taxa);
+        ajuste_salvar('comissao', $com + 0);
+        json_out(['ok' => true]);
+
     /* ---------- conta ---------- */
     case 'conta.senha':
         $st = db()->prepare('SELECT senha_hash FROM usuarios WHERE id = ?');

@@ -112,13 +112,14 @@ $gal = array_slice($fotos, 0, 3);
       <a class="btn btn-wa btn-lg" href="<?= h(whatsapp_url($waText)) ?>" target="_blank" rel="noopener"><?= ic('message-circle') ?>Tenho interesse</a>
       <a class="btn btn-outline" href="/contato?anuncio=<?= rawurlencode($a['codigo']) ?>" rel="nofollow"><?= ic('mail') ?>Enviar mensagem</a>
       <ul class="side-list">
-        <li><span>Código</span><strong><?= h($a['codigo']) ?></strong></li>
+        <li><span>Código</span><strong><button type="button" class="copy-code" data-copy="<?= h($a['codigo']) ?>" title="Copiar código"><?= h($a['codigo']) ?><?= ic('copy') ?></button></strong></li>
         <li><span>Segmento</span><strong><?= h($s['nome']) ?></strong></li>
         <li><span>Local</span><strong><?= h($bairroWhere) ?></strong></li>
         <li><span>Faturamento/mês</span><strong><?= money($a['faturamento']) ?></strong></li>
         <?php if ($a['area']): ?><li><span>Área</span><strong><?= num($a['area']) ?> m²</strong></li><?php endif; ?>
       </ul>
-      <?php if ($consultor): ?><div class="consultant"><img class="avatar" src="<?= h(photo_url($consultor['foto'], 120)) ?>" alt="<?= h($consultor['nome']) ?>" loading="lazy"><div><strong><?= h($consultor['nome']) ?></strong><span><?= h($consultor['cargo']) ?></span></div></div><?php endif; ?>
+      <?php if ($ig = instagram_da_cidade($cid)): ?><a class="city-ig light" href="<?= h($ig['url']) ?>" target="_blank" rel="noopener"><?= ic('instagram') ?><span>Mais empresas em <?= h($cid['nome'] ?? '') ?> no <strong><?= h($ig['handle']) ?></strong></span></a><?php endif; ?>
+      <?php if ($consultor): ?><div class="consultant"><?= avatar($consultor) ?><div><strong><?= h($consultor['nome']) ?></strong><span><?= h($consultor['cargo']) ?></span></div></div><?php endif; ?>
     </div></aside></div>
 
 <?php if ($similares): ?>

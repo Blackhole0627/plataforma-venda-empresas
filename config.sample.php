@@ -31,6 +31,10 @@ return [
     'instagram' => '',                      // full URL, empty hides the icon
     'horario' => 'Seg a sex, 9h às 18h',
 
+    /* ---------- analytics (empty = off). With either one set, the site asks visitors to accept cookies first ---------- */
+    'meta_pixel' => '',                     // Meta (Facebook/Instagram) Pixel ID, only digits
+    'ga_id' => '',                          // Google Analytics 4 ID, like G-XXXXXXXXXX
+
     /* ---------- e-mail notices ---------- */
     'notificar_email' => '',                // team inbox for new submissions/messages, empty = off
     'email_remetente' => 'no-reply@seudominio.com.br', // must use the site's domain or mail may be rejected
@@ -39,6 +43,8 @@ return [
      * foto: a path like /assets/img/equipe/maria.jpg (square, about 400x400) or an Unsplash id
      * ufs:  states this person handles (listing page shows the right consultant)
      * cadastros: true = appears on the seller form as "vai analisar seu cadastro"
+     * Empty foto shows the person's initials.
+     * The publication fee and the commission are edited by the team in Equipe, valores e senha.
      */
     'equipe' => [
         ['nome' => 'Mariana Costa', 'cargo' => 'Consultora · Sul e Sudeste', 'foto' => '1573496359142-b8d87734a5a2',

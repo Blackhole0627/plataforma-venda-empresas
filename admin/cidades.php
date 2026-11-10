@@ -14,7 +14,7 @@ admin_head('Cidades', 'cidades');
               <div class="input-icon"><i data-lucide="search"></i><input class="input" id="q" type="search" placeholder="Buscar cidade..."></div>
             </div>
             <table class="table">
-              <thead><tr><th>Cidade</th><th>Página no site</th><th>Anúncios</th><th>Status</th><th style="text-align:right">Ações</th></tr></thead>
+              <thead><tr><th>Cidade</th><th>Página no site</th><th>Instagram</th><th>Anúncios</th><th>Status</th><th style="text-align:right">Ações</th></tr></thead>
               <tbody id="rows"></tbody>
             </table>
           </div>
@@ -28,6 +28,10 @@ admin_head('Cidades', 'cidades');
               <div class="note info" style="margin-bottom:16px;font-size:.84rem"><i data-lucide="link"></i><span id="url-prev">O link da página aparece aqui.</span></div>
               <button class="btn btn-primary btn-block" type="submit"><i data-lucide="plus"></i>Adicionar cidade</button>
             </form>
+            <div class="adm-panel">
+              <h2><i data-lucide="instagram"></i>Instagram por cidade</h2>
+              <p class="muted" style="font-size:.88rem;margin:0">Clique no ícone do Instagram na linha da cidade e coloque o nome da conta. Ele aparece na página da cidade e nos anúncios dela. Cidade sem conta própria mostra o Instagram principal.</p>
+            </div>
           </aside>
         </div>
       </main>
@@ -54,11 +58,12 @@ admin_head('Cidades', 'cidades');
           return '<tr data-slug="' + c.slug + '">' +
             '<td><span class="t-main">' + esc(c.nome) + '/' + c.uf + '</span><span class="t-sub">' + (c.capital ? 'Capital' : 'Adicionada pela equipe') + '</span></td>' +
             '<td data-l="Página"><a href="' + PP.cidadeUrl(c.slug) + '" target="_blank" style="font-size:.85rem">/comprar-empresa/' + c.slug + '</a></td>' +
+            '<td data-l="Instagram">' + (c.instagram ? '<a href="https://www.instagram.com/' + esc(c.instagram) + '/" target="_blank" rel="noopener" style="font-size:.85rem">@' + esc(c.instagram) + '</a>' : '<span class="muted" style="font-size:.85rem">Principal</span>') + '</td>' +
             '<td data-l="Anúncios">' + n + '</td>' +
             '<td>' + (c.ativa ? '<span class="status st-publicado">Ativa</span>' : '<span class="status st-pausado">Oculta</span>') + '</td>' +
-            '<td class="actions-cell"><button class="icon-btn" data-act="toggle" title="' + (c.ativa ? 'Ocultar' : 'Ativar') + '" aria-label="Ativar ou ocultar">' + ic(c.ativa ? 'eye-off' : 'eye') + '</button>' +
+            '<td class="actions-cell"><button class="icon-btn" data-act="insta" title="Instagram da cidade" aria-label="Instagram da cidade">' + ic('instagram') + '</button><button class="icon-btn" data-act="toggle" title="' + (c.ativa ? 'Ocultar' : 'Ativar') + '" aria-label="Ativar ou ocultar">' + ic(c.ativa ? 'eye-off' : 'eye') + '</button>' +
             (c.capital ? '' : '<button class="icon-btn danger" data-act="del" title="Remover" aria-label="Remover">' + ic('trash-2') + '</button>') + '</td></tr>';
-        }).join('') || '<tr><td colspan="5"><div class="adm-empty">Nenhuma cidade.</div></td></tr>';
+        }).join('') || '<tr><td colspan="6"><div class="adm-empty">Nenhuma cidade.</div></td></tr>';
         PP.icons();
       }
 
@@ -86,6 +91,13 @@ admin_head('Cidades', 'cidades');
         const f = e.target.closest('[data-f]'); if (f) { filtro = f.dataset.f; render(); return; }
         const b = e.target.closest('[data-act]'); if (!b) return;
         const slug = b.closest('tr').dataset.slug;
+        if (b.dataset.act === 'insta') {
+          const c = Store.cidade(slug);
+          const v = prompt('Instagram de ' + c.nome + '/' + c.uf + '\nColoque o nome da conta, tipo @empresasavenda.df\nDeixe vazio pra usar o Instagram principal.', c.instagram ? '@' + c.instagram : '');
+          if (v === null) return;
+          const r = await A.busy(b, () => Store.setInstagram(slug, v.trim()));
+          if (r) PP.toast(r.instagram ? 'Instagram de ' + r.nome + ' salvo' : r.nome + ' volta a usar o Instagram principal');
+        }
         if (b.dataset.act === 'toggle') {
           const c = await A.busy(b, () => Store.toggleCidade(slug));
           if (c) PP.toast(c.nome + (c.ativa ? ' ativada' : ' oculta do site'));

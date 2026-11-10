@@ -47,7 +47,7 @@ page_head(['title' => 'Entrar · Área da equipe', 'admin' => true, 'robots' => 
       <div>
         <h2>Área da equipe</h2>
         <p>Aqui chegam os cadastros das empresas. Vocês conferem, montam o anúncio e publicam no site.</p>
-        <div class="avatar-stack" style="margin-top:22px"><?php foreach (equipe() as $p): ?><img src="<?= h(photo_url($p['foto'], 100)) ?>" alt="<?= h($p['nome']) ?>"><?php endforeach; ?></div>
+        <div class="avatar-stack" style="margin-top:22px"><?php foreach (equipe() as $p) echo avatar($p, 100, "av"); ?></div>
       </div>
     </div>
     <div class="login-form">

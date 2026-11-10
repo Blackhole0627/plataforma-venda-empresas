@@ -237,7 +237,7 @@ site_header('cadastro');
           <li><i data-lucide="phone-call"></i><span>A gente te chama no WhatsApp em até 1 dia útil.</span></li>
           <li><i data-lucide="badge-check"></i><span>Cadastro sem compromisso.</span></li>
         </ul>
-        <?php if ($analista): ?><div class="consultant"><img class="avatar" src="<?= h(photo_url($analista['foto'], 120)) ?>" alt="<?= h($analista['nome']) ?>"><div><strong><?= h($analista['nome']) ?></strong><span>Vai analisar seu cadastro</span></div></div><?php endif; ?>
+        <?php if ($analista): ?><div class="consultant"><?= avatar($analista) ?><div><strong><?= h($analista['nome']) ?></strong><span>Vai analisar seu cadastro</span></div></div><?php endif; ?>
       </aside>
     </div>
   </main>

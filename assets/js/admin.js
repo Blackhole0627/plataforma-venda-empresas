@@ -40,7 +40,7 @@
       '<div class="side-bottom">' +
         '<div class="side-help"><strong>Como funciona</strong>O cadastro chega aqui, a equipe confere, cria o anúncio e publica no site.</div>' +
         '<nav class="adm-nav">' +
-          link('/admin/conta', 'user-cog', 'Equipe e senha', 'conta') +
+          link('/admin/conta', 'user-cog', 'Equipe, valores e senha', 'conta') +
           '<a href="/" target="_blank">' + PP.ic('external-link') + 'Ver site</a>' +
           '<a href="/admin/logout?t=' + encodeURIComponent(B.csrf || '') + '">' + PP.ic('log-out') + 'Sair</a>' +
         '</nav>' +

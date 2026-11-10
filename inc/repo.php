@@ -5,7 +5,57 @@
 function cidade_js(array $r): array
 {
     return ['slug' => $r['slug'], 'nome' => $r['nome'], 'uf' => $r['uf'],
-        'capital' => (bool) $r['capital'], 'ativa' => (bool) $r['ativa']];
+        'capital' => (bool) $r['capital'], 'ativa' => (bool) $r['ativa'], 'instagram' => (string) ($r['instagram'] ?? '')];
+}
+
+/* "@conta", "conta" or an instagram.com link -> "conta". Empty string if it doesn't look like a handle. */
+function instagram_handle(string $v): string
+{
+    $v = trim($v);
+    if (preg_match('~instagram\.com/([A-Za-z0-9._]+)~i', $v, $m)) $v = $m[1];
+    $v = ltrim($v, '@');
+    return preg_match('/^[A-Za-z0-9._]{1,30}$/', $v) ? $v : '';
+}
+
+/* the city's own account if the team set one, else the main account from config. null when neither exists. */
+function instagram_da_cidade(?array $c): ?array
+{
+    $h = $c['instagram'] ?? '';
+    if ($h !== '') return ['url' => 'https://www.instagram.com/' . $h . '/', 'handle' => '@' . $h, 'cidade' => true];
+    $main = (string) cfg('instagram', '');
+    if ($main === '') return null;
+    $mh = instagram_handle($main);
+    return ['url' => $main, 'handle' => $mh ? '@' . $mh : 'Instagram', 'cidade' => false];
+}
+
+/* ---------- ajustes (values the team edits in Equipe, valores e senha) ---------- */
+const AJUSTES = [
+    'taxa_publicacao' => 350,
+    'comissao' => 8,
+];
+
+function ajuste(string $k)
+{
+    static $vals = null;
+    if ($vals === null) {
+        $vals = [];
+        try {
+            foreach (db()->query('SELECT chave, valor FROM ajustes')->fetchAll() as $r) $vals[$r['chave']] = $r['valor'];
+        } catch (Throwable $e) { /* table not created yet: defaults */ }
+    }
+    $v = $vals[$k] ?? cfg($k, AJUSTES[$k] ?? null);
+    return is_numeric($v) ? $v + 0 : $v;
+}
+
+function ajuste_salvar(string $k, $v): void
+{
+    db()->prepare('INSERT INTO ajustes (chave, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)')->execute([$k, (string) $v]);
+}
+
+/* 8 -> "8%", 7.5 -> "7,5%" */
+function pct($v): string
+{
+    return str_replace('.', ',', (string) ($v + 0)) . '%';
 }
 
 function cidades(bool $onlyActive = false): array
