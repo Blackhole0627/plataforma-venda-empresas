@@ -4,7 +4,7 @@ require __DIR__ . '/inc/bootstrap.php';
 $taxa = money((float) ajuste('taxa_publicacao'));
 $com = pct(ajuste('comissao'));
 $faq = [
-    ['Quanto custa para anunciar?', 'São dois valores, e a parte maior só é paga se a sua empresa for vendida. 1) Taxa de publicação de ' . $taxa . ', paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor, e o anúncio fica no ar até a venda. 2) Comissão de ' . $com . ' sobre o valor da venda, paga somente no fechamento.'],
+    ['Quanto custa para anunciar?', 'São dois valores, e a parte maior só é paga se a sua empresa for vendida. 1) Taxa de publicação de ' . $taxa . ', paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor, e o anúncio fica no ar até a venda. 2) Comissão de ' . $com . ' sobre o valor da venda, paga somente quando você recebe o valor da venda.'],
     ['O nome da minha empresa vai aparecer no site?', 'Não. O anúncio mostra o segmento, a cidade e faixas de números, e você escolhe o nível de detalhe. O nome e o endereço só são passados a compradores aprovados pela equipe depois de assinarem um termo de confidencialidade.'],
     ['Como vocês escolhem os compradores?', 'A equipe conversa com cada interessado antes de qualquer contato com você, para entender o perfil e o interesse real na compra.'],
     ['E se o interessado for meu concorrente?', 'Seus dados só são liberados depois que o comprador é aprovado pela equipe e assina o termo de confidencialidade. Você também pode indicar empresas ou pessoas que não devem receber as suas informações.'],
@@ -98,7 +98,7 @@ $waDuvidas = whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúv
           <p class="muted">O cadastro é grátis. São dois valores, e a parte maior só é paga se a sua empresa for vendida.</p>
           <div class="price-cards">
             <div class="price-card"><small>Taxa de publicação</small><strong><?= $taxa ?></strong><span>Paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor.</span></div>
-            <div class="price-card"><small>Comissão</small><strong><?= $com ?></strong><span>Sobre o valor da venda, paga somente no fechamento.</span></div>
+            <div class="price-card"><small>Comissão</small><strong><?= $com ?></strong><span>Sobre o valor da venda, paga somente quando você recebe o valor da venda.</span></div>
           </div>
           <div class="hero-actions" style="margin-top:22px">
             <a class="btn btn-primary btn-lg" href="/cadastro">Cadastrar minha empresa</a>
@@ -117,7 +117,7 @@ $waDuvidas = whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúv
         </div>
         <div class="faq">
           <?php foreach ($faq as $i => [$q, $r]): ?>
-          <details<?= $i === 0 ? ' open' : '' ?>><summary><?= h($q) ?></summary><?php if ($i === 0): ?><p>São dois valores, e a parte maior só é paga se a sua empresa for vendida.</p><ol class="faq-list"><li><strong>Taxa de publicação de <?= $taxa ?></strong>, paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor, e o anúncio fica no ar até a venda.</li><li><strong>Comissão de <?= $com ?></strong> sobre o valor da venda, paga somente no fechamento.</li></ol><?php else: ?><p><?= h($r) ?></p><?php endif; ?></details>
+          <details<?= $i === 0 ? ' open' : '' ?>><summary><?= h($q) ?></summary><?php if ($i === 0): ?><p>São dois valores, e a parte maior só é paga se a sua empresa for vendida.</p><ol class="faq-list"><li><strong>Taxa de publicação de <?= $taxa ?></strong>, paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor, e o anúncio fica no ar até a venda.</li><li><strong>Comissão de <?= $com ?></strong> sobre o valor da venda, paga somente quando você recebe o valor da venda.</li></ol><?php else: ?><p><?= h($r) ?></p><?php endif; ?></details>
           <?php endforeach; ?>
         </div>
         <div class="faq-cta">

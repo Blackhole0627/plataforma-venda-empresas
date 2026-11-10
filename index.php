@@ -57,13 +57,13 @@ site_header('home');
           <form class="search-box" id="search-form" action="/comprar-empresa">
             <div class="sb-field">
               <label for="sb-cidade">Cidade</label>
-              <select id="sb-cidade" name="cidade"><option value="">Todas as cidades</option>
+              <select id="sb-cidade" name="cidade"><option value="">Todas</option>
                 <?php foreach ($cids as $c): ?><option value="<?= $c['slug'] ?>"><?= h($c['nome']) ?>/<?= $c['uf'] ?></option><?php endforeach; ?>
               </select>
             </div>
             <div class="sb-field">
               <label for="sb-seg">Segmento</label>
-              <select id="sb-seg" name="segmento"><option value="">Todos os segmentos</option>
+              <select id="sb-seg" name="segmento"><option value="">Todos</option>
                 <?php foreach (SEGMENTOS as $s): ?><option value="<?= $s['slug'] ?>"><?= h($s['nome']) ?></option><?php endforeach; ?>
               </select>
             </div>
@@ -101,24 +101,8 @@ site_header('home');
       </div>
     </section>
 
-    <section class="section section-tight">
-      <div class="container">
-        <div class="section-head">
-          <div>
-            <span class="kicker">Segmentos</span>
-            <h2>Encontre por segmento</h2>
-          </div>
-          <a class="btn btn-outline" href="/comprar-empresa">Ver todos os segmentos <?= ic('arrow-right') ?></a>
-        </div>
-        <div class="chip-rail" aria-label="Segmentos">
-          <a class="seg-chip active" href="/comprar-empresa"><?= ic('layout-grid') ?>Todos</a>
-          <?php foreach (SEGMENTOS as $s): ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
-        </div>
-      </div>
-    </section>
-
 <?php if ($dest): ?>
-    <section class="section section-alt">
+    <section class="section">
       <div class="container" data-carousel>
         <div class="section-head">
           <div>
@@ -136,6 +120,22 @@ site_header('home');
       </div>
     </section>
 <?php endif; ?>
+
+    <section class="section section-tight section-alt">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <span class="kicker">Segmentos</span>
+            <h2>Encontre por segmento</h2>
+          </div>
+          <a class="btn btn-outline" href="/comprar-empresa">Ver todos os segmentos <?= ic('arrow-right') ?></a>
+        </div>
+        <div class="chip-rail" aria-label="Segmentos">
+          <a class="seg-chip active" href="/comprar-empresa"><?= ic('layout-grid') ?>Todos</a>
+          <?php foreach (SEGMENTOS as $s): ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
+        </div>
+      </div>
+    </section>
 
     <section class="section">
       <div class="container">
