@@ -56,7 +56,26 @@ $waDuvidas = whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúv
       </div>
     </section>
 
-    <section class="section section-alt">
+    <section class="section section-alt" id="investimento">
+      <div class="container split">
+        <div>
+          <span class="kicker">Investimento</span>
+          <h2>Quanto custa vender com a gente</h2>
+          <p class="muted">O cadastro é grátis. São dois valores, e a parte maior só é paga se a sua empresa for vendida.</p>
+          <div class="price-cards">
+            <div class="price-card"><small>Taxa de publicação</small><strong><?= $taxa ?></strong><span>Paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor.</span></div>
+            <div class="price-card"><small>Comissão</small><strong><?= $com ?></strong><span>Sobre o valor da venda, paga somente quando você recebe o valor da venda.</span></div>
+          </div>
+          <div class="hero-actions" style="margin-top:22px">
+            <a class="btn btn-primary btn-lg" href="/cadastro">Cadastrar minha empresa</a>
+            <a class="btn btn-outline btn-lg" href="<?= h($waDuvidas) ?>" target="_blank" rel="noopener"><?= ic('message-circle') ?>Tirar dúvidas</a>
+          </div>
+        </div>
+        <img class="rounded" src="/assets/img/site/investimento.jpg" alt="Proposta de serviço sendo conferida com calculadora ao lado" loading="lazy">
+      </div>
+    </section>
+
+    <section class="section">
       <div class="container split">
         <div>
           <span class="kicker">Sigilo</span>
@@ -75,7 +94,7 @@ $waDuvidas = whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúv
       </div>
     </section>
 
-    <section class="section">
+    <section class="section section-alt">
       <div class="container">
         <div class="section-head center">
           <span class="kicker">Fotos do anúncio</span>
@@ -87,25 +106,6 @@ $waDuvidas = whatsapp_url('Olá! Quero vender minha empresa e tenho algumas dúv
           <div class="photo-opt"><img src="<?= photo_url(IMAGENS['fotoReal'], 800) ?>" alt="Exemplo com fotos reais" loading="lazy"><div class="po-body"><h3>Fotos reais, sem identificação</h3><p class="muted" style="margin:0">Mostram o espaço de verdade e passam mais confiança ao comprador. Nossa equipe revisa cada foto e retira o que possa identificar o negócio antes de publicar.</p></div></div>
         </div>
         <div class="note photo-tip"><?= ic('camera') ?><span><strong>Antes de fotografar.</strong> Evite fachada, letreiro, logo, uniformes, produtos com marca, pessoas e a vista da janela. Prefira luz natural e ambiente organizado, de 6 a 10 fotos (até 15). Você vê e aprova as fotos antes de o anúncio ir ao ar.</span></div>
-      </div>
-    </section>
-
-    <section class="section section-alt" id="investimento">
-      <div class="container split">
-        <div>
-          <span class="kicker">Investimento</span>
-          <h2>Quanto custa vender com a gente</h2>
-          <p class="muted">O cadastro é grátis. São dois valores, e a parte maior só é paga se a sua empresa for vendida.</p>
-          <div class="price-cards">
-            <div class="price-card"><small>Taxa de publicação</small><strong><?= $taxa ?></strong><span>Paga uma única vez, só depois de você aprovar o anúncio. Inclui a revisão e a montagem do anúncio e a sugestão de faixa de valor.</span></div>
-            <div class="price-card"><small>Comissão</small><strong><?= $com ?></strong><span>Sobre o valor da venda, paga somente quando você recebe o valor da venda.</span></div>
-          </div>
-          <div class="hero-actions" style="margin-top:22px">
-            <a class="btn btn-primary btn-lg" href="/cadastro">Cadastrar minha empresa</a>
-            <a class="btn btn-outline btn-lg" href="<?= h($waDuvidas) ?>" target="_blank" rel="noopener"><?= ic('message-circle') ?>Tirar dúvidas</a>
-          </div>
-        </div>
-        <img class="rounded" src="/assets/img/site/investimento.jpg" alt="Proposta de serviço sendo conferida com calculadora ao lado" loading="lazy">
       </div>
     </section>
 

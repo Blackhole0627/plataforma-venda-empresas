@@ -130,5 +130,5 @@ CREATE TABLE IF NOT EXISTS login_falhas (
 /* values the team can change in the team area (publication fee, commission) */
 CREATE TABLE IF NOT EXISTS ajustes (
   chave VARCHAR(60) NOT NULL PRIMARY KEY,
-  valor VARCHAR(255) NOT NULL
+  valor TEXT NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

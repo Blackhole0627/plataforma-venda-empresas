@@ -36,9 +36,11 @@ Aqui você troca a sua senha e cria ou remove o acesso de outras pessoas. Cada p
 
 **Valores do site.** A taxa de publicação e a comissão ficam aqui também. Mudou e salvou, a página Vender empresa já mostra o valor novo.
 
+**Consultor no site.** Nome, cargo e foto do consultor que aparece na home, no contato e no cadastro. Clique em Trocar foto, escolha uma foto de rosto e depois em Salvar consultor. A foto é cortada quadrada sozinha e fica redonda no site.
+
 ## Mudar nome, foto e contatos do site
 
-O WhatsApp, o email, o horário, o Instagram principal, o Pixel e o Google Analytics e as pessoas da equipe que aparecem no site não mudam por aqui. Quando precisar trocar, é só me chamar.
+O WhatsApp, o email, o horário, o Instagram principal, o Pixel e o Google Analytics e quais estados cada consultor atende não mudam por aqui. Quando precisar trocar, é só me chamar.
 
 ---
 

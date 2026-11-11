@@ -2,6 +2,7 @@
 require dirname(__DIR__) . '/inc/bootstrap.php';
 $me = admin_head('Equipe, valores e senha', 'conta');
 $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER BY nome')->fetchAll();
+$eq = equipe();
 ?>
   <div class="adm">
     <aside id="adm-side"></aside>
@@ -9,6 +10,7 @@ $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER B
       <header id="adm-top"></header>
       <main class="adm-content">
         <div class="adm-grid" style="grid-template-columns:1fr 340px">
+          <div>
           <div class="adm-card">
             <table class="table">
               <thead><tr><th>Acesso</th><th>Último login</th><th style="text-align:right">Ações</th></tr></thead>
@@ -22,6 +24,26 @@ $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER B
               <?php endforeach; ?>
               </tbody>
             </table>
+          </div>
+
+          <?php if ($eq): ?>
+          <form class="adm-panel" id="f-equipe" novalidate style="margin-top:18px">
+            <h2><?= ic('id-card') ?>Consultor no site</h2>
+            <p class="muted" style="font-size:.88rem">Nome, cargo e foto que aparecem na home, no contato e no cadastro. Use uma foto de rosto, ela fica redonda no site.</p>
+            <?php foreach ($eq as $i => $p): ?>
+            <div class="eq-row" data-i="<?= $i ?>" data-foto="<?= h($p['foto'] ?? '') ?>">
+              <div class="eq-foto"><?= avatar($p, 200, 'eq-av') ?>
+                <label class="btn btn-outline btn-sm"><?= ic('camera') ?>Trocar foto<input type="file" accept="image/*" class="sr-only" data-foto-input></label>
+              </div>
+              <div class="eq-fields">
+                <div class="field"><label>Nome</label><input class="input" data-k="nome" value="<?= h($p['nome']) ?>" maxlength="60"></div>
+                <div class="field"><label>Cargo</label><input class="input" data-k="cargo" value="<?= h($p['cargo']) ?>" maxlength="80"></div>
+              </div>
+            </div>
+            <?php endforeach; ?>
+            <button class="btn btn-primary" type="submit">Salvar consultor</button>
+          </form>
+          <?php endif; ?>
           </div>
 
           <aside>
@@ -55,6 +77,45 @@ $users = db()->query('SELECT id, nome, email, ultimo_login FROM usuarios ORDER B
     (function () {
       const $ = id => document.getElementById(id), A = PP.Admin;
       const call = (action, data) => PP.api('/admin/api', Object.assign({ action }, data));
+      /* consultant photo: crop to a centered square (a bit toward the top, where the face usually is) */
+      function quadrada(file) {
+        return new Promise((ok, fail) => {
+          const img = new Image(), url = URL.createObjectURL(file);
+          img.onload = () => {
+            const s = Math.min(img.width, img.height), x = (img.width - s) / 2, y = img.height > img.width ? (img.height - s) * 0.2 : 0;
+            const c = document.createElement('canvas'); c.width = c.height = Math.min(s, 600);
+            c.getContext('2d').drawImage(img, x, y, s, s, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(url); c.toBlob(b => b ? ok(b) : fail(new Error('foto')), 'image/jpeg', 0.88);
+          };
+          img.onerror = () => fail(new Error('Não consegui abrir essa foto.'));
+          img.src = url;
+        });
+      }
+      const fe = $('f-equipe');
+      if (fe) {
+        fe.addEventListener('change', async e => {
+          const inp = e.target.closest('[data-foto-input]'); if (!inp || !inp.files[0]) return;
+          const row = inp.closest('.eq-row'), lbl = inp.closest('label');
+          lbl.classList.add('loading');
+          try {
+            const path = await PP.Store.uploadFoto(await quadrada(inp.files[0]), 'equipe');
+            row.dataset.foto = path;
+            const old = row.querySelector('.eq-av'), img = document.createElement('img');
+            img.className = 'eq-av'; img.src = path; img.alt = ''; old.replaceWith(img);
+            PP.toast('Foto pronta. Clique em Salvar consultor');
+          } catch (err) { PP.toast(err.message || 'Não deu pra enviar a foto', 'error'); }
+          lbl.classList.remove('loading'); inp.value = '';
+        });
+        fe.addEventListener('submit', async e => {
+          e.preventDefault();
+          const equipe = {};
+          fe.querySelectorAll('.eq-row').forEach(r => {
+            equipe[r.dataset.i] = { nome: r.querySelector('[data-k=nome]').value, cargo: r.querySelector('[data-k=cargo]').value, foto: r.dataset.foto || '' };
+          });
+          const ok = await A.busy(fe.querySelector('button[type=submit]'), () => call('equipe.salvar', { equipe }));
+          if (ok) PP.toast('Consultor salvo');
+        });
+      }
       $('f-valores').addEventListener('submit', async e => {
         e.preventDefault();
         const ok = await A.busy(e.target.querySelector('button'), () => call('ajustes.salvar', { taxa_publicacao: $('taxa').value, comissao: $('comissao').value }));

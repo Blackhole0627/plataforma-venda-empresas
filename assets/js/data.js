@@ -83,7 +83,7 @@
     async toggleCidade(slug) { const r = await admin('cidade.alternar', { slug }); Object.assign(Store.cidade(slug), r.cidade); return r.cidade; },
     async setInstagram(slug, instagram) { const r = await admin('cidade.instagram', { slug, instagram }); Object.assign(Store.cidade(slug), r.cidade); return r.cidade; },
     async removeCidade(slug) { await admin('cidade.remover', { slug }); const i = cidades.findIndex(c => c.slug === slug); if (i >= 0) cidades.splice(i, 1); },
-    async uploadFoto(blob) { const f = new FormData(); f.append('action', 'foto.enviar'); f.append('foto', blob, 'foto.jpg'); return (await api('/admin/api', f)).path; }
+    async uploadFoto(blob, pasta) { const f = new FormData(); f.append('action', 'foto.enviar'); f.append('foto', blob, 'foto.jpg'); if (pasta) f.append('pasta', pasta); return (await api('/admin/api', f)).path; }
   };
 
   window.PP = Object.assign(window.PP || {}, {

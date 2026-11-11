@@ -28,7 +28,7 @@ switch ($action) {
 
     case 'foto.enviar':
         $files = arquivos('foto');
-        $p = $files ? salvar_foto($files[0], 'anuncios/' . date('Y-m')) : null;
+        $p = $files ? salvar_foto($files[0], ($d['pasta'] ?? '') === 'equipe' ? 'equipe' : 'anuncios/' . date('Y-m')) : null;
         if (!$p) json_error('Não deu pra salvar essa foto. Use JPG, PNG ou WEBP até 10 MB.', 422);
         json_out(['path' => $p]);
 
@@ -84,6 +84,23 @@ switch ($action) {
         if ($com <= 0 || $com > 50) json_error('Confira a comissão. Use um número entre 0,5 e 50.', 422);
         ajuste_salvar('taxa_publicacao', $taxa);
         ajuste_salvar('comissao', $com + 0);
+        json_out(['ok' => true]);
+
+    /* ---------- consultores no site (nome, cargo, foto) ---------- */
+    case 'equipe.salvar':
+        $cfg = cfg('equipe', []);
+        $out = [];
+        foreach ((array) ($d['equipe'] ?? []) as $i => $p) {
+            if (!isset($cfg[$i]) || !is_array($p)) continue;
+            $nome = mb_substr(trim((string) ($p['nome'] ?? '')), 0, 60);
+            $cargo = mb_substr(trim((string) ($p['cargo'] ?? '')), 0, 80);
+            $foto = trim((string) ($p['foto'] ?? ''));
+            if ($nome === '') json_error('Coloque o nome do consultor.', 422);
+            if ($foto !== '' && !preg_match('#^/(uploads|assets/img)/[a-z0-9/_.-]+\.(jpe?g|png|webp)$#i', $foto) && !preg_match('#^[0-9]+-[0-9a-f]+$#', $foto))
+                json_error('Foto inválida. Envie de novo.', 422);
+            $out[$i] = ['nome' => $nome, 'cargo' => $cargo, 'foto' => $foto];
+        }
+        ajuste_salvar('equipe_site', json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
         json_out(['ok' => true]);
 
     /* ---------- conta ---------- */

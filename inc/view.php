@@ -154,9 +154,18 @@ function card(array $a): string
         '</div></article>';
 }
 
+/* team from config.php; name, role and photo can be changed in the team area (ajustes 'equipe_site') */
 function equipe(): array
 {
-    return cfg('equipe', []);
+    $eq = cfg('equipe', []);
+    $ed = json_decode((string) ajuste('equipe_site'), true);
+    if (is_array($ed)) {
+        foreach ($ed as $i => $p) {
+            if (!isset($eq[$i]) || !is_array($p)) continue;
+            foreach (['nome', 'cargo', 'foto'] as $k) if (isset($p[$k])) $eq[$i][$k] = (string) $p[$k];
+        }
+    }
+    return $eq;
 }
 
 /* team photo, or a circle with initials when there is no photo yet */
