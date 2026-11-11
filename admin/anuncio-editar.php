@@ -112,7 +112,7 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
       const cad = fromId ? Store.cadastro(fromId) : (anuncio && anuncio.cadastroId ? Store.cadastro(anuncio.cadastroId) : null);
       let fotos = [];
 
-      SEGMENTOS.forEach(s => $('segmento').insertAdjacentHTML('beforeend', '<option value="' + s.slug + '">' + esc(s.nome) + '</option>'));
+      $('segmento').insertAdjacentHTML('beforeend', PP.segOptions());
       Store.cidades(true).forEach(c =>
         $('cidade').insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
 

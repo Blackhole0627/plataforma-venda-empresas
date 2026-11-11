@@ -27,6 +27,20 @@
     return (s ? s.fotos : []).map(id => 'u:' + id);
   }
 
+  /* grouped like Tiago's list; "Outros" is always last */
+  function segLabel(s) { return s.nome + (s.desc ? ' (' + s.desc + ')' : ''); }
+  function segGrupos() {
+    const g = new Map();
+    SEGMENTOS.forEach(s => { if (!g.has(s.grupo)) g.set(s.grupo, []); g.get(s.grupo).push(s); });
+    return [...g.entries()];
+  }
+  function segOptions(sel) {
+    const e = t => String(t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+    return segGrupos().map(([g, list]) => '<optgroup label="' + e(g) + '">' +
+      list.map(s => '<option value="' + s.slug + '"' + (s.slug === sel ? ' selected' : '') + '>' + e(segLabel(s)) + '</option>').join('') +
+      '</optgroup>').join('');
+  }
+
   /* ---------- API ---------- */
   async function api(url, payload, opts) {
     const isForm = payload instanceof FormData;
@@ -74,6 +88,6 @@
 
   window.PP = Object.assign(window.PP || {}, {
     BOOT: B, slugify, photoUrl, SEGMENTOS, UFS: B.ufs || [], IMAGENS: B.imagens || {}, EQUIPE: B.equipe || [],
-    Store, segFotos, api
+    Store, segFotos, segLabel, segGrupos, segOptions, api
   });
 })();

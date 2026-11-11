@@ -198,10 +198,13 @@ site_header('comprar');
         elCid.insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
 
       // segments with counts
-      $('f-seg').innerHTML = SEGMENTOS.map(s => {
+      // only segments that have listings (61 in total would be a wall of checkboxes), plus any picked in the URL
+      const segHtml = SEGMENTOS.map(s => {
         const n = all.filter(a => a.segmento === s.slug).length;
+        if (!n && !state.segs.includes(s.slug)) return '';
         return '<label class="seg-opt"><input type="checkbox" value="' + s.slug + '">' + esc(s.nome) + '<em>' + n + '</em></label>';
       }).join('');
+      $('f-seg').innerHTML = segHtml || '<p class="muted" style="margin:0;font-size:.9rem">Os segmentos aparecem aqui quando tiver empresa anunciada.</p>';
 
       function syncInputs() {
         elQ.value = state.q; elCid.value = state.cidade; elOrd.value = state.ordem;

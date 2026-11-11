@@ -63,9 +63,7 @@ site_header('home');
             </div>
             <div class="sb-field">
               <label for="sb-seg">Segmento</label>
-              <select id="sb-seg" name="segmento"><option value="">Todos</option>
-                <?php foreach (SEGMENTOS as $s): ?><option value="<?= $s['slug'] ?>"><?= h($s['nome']) ?></option><?php endforeach; ?>
-              </select>
+              <select id="sb-seg" name="segmento"><option value="">Todos</option><?= seg_options() ?></select>
             </div>
             <div class="sb-field">
               <label for="sb-valor">Valor</label>
@@ -128,11 +126,11 @@ site_header('home');
             <span class="kicker">Segmentos</span>
             <h2>Encontre por segmento</h2>
           </div>
-          <a class="btn btn-outline" href="/comprar-empresa">Ver todos os segmentos <?= ic('arrow-right') ?></a>
         </div>
         <div class="chip-rail" aria-label="Segmentos">
           <a class="seg-chip active" href="/comprar-empresa"><?= ic('layout-grid') ?>Todos</a>
-          <?php foreach (SEGMENTOS as $s): ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
+          <?php foreach (SEGMENTOS as $s): if (!$s['chip']) continue; ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
+          <button type="button" class="seg-chip seg-chip-all" data-sheet-open="sheet-segmentos"><?= ic('list') ?>Ver todos os segmentos</button>
         </div>
       </div>
     </section>
@@ -266,6 +264,21 @@ site_header('home');
         </div></div>
         <?php endforeach; ?>
         <p class="sheet-none muted" hidden>Nenhuma cidade com esse nome. <a href="<?= h(whatsapp_url('Olá! Não encontrei minha cidade no site.')) ?>" target="_blank" rel="noopener">Fale com a equipe</a>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="sheet" id="sheet-segmentos" aria-hidden="true">
+    <div class="sheet-box" role="dialog" aria-modal="true" aria-labelledby="sheet-seg-title">
+      <div class="sheet-head"><h2 id="sheet-seg-title">Todos os segmentos</h2><button type="button" class="icon-round" data-sheet-close aria-label="Fechar"><?= ic('x') ?></button></div>
+      <div class="input-icon"><?= ic('search') ?><input class="input" type="search" placeholder="Digite o segmento..." data-sheet-filter="sheet-seg-list" aria-label="Buscar segmento"></div>
+      <div class="sheet-body" id="sheet-seg-list">
+        <?php foreach (seg_grupos() as $g => $l): ?>
+        <div class="sheet-group"><h3><?= h($g) ?></h3><div class="sheet-links">
+          <?php foreach ($l as $s): ?><a href="/comprar-empresa?segmento=<?= $s['slug'] ?>" data-k="<?= h(str_replace('-', ' ', slugify(seg_label($s) . ' ' . $g))) ?>"><?= ic($s['icon']) ?><span><?= h($s['nome']) ?><?php if (!empty($s['desc'])): ?><small><?= h($s['desc']) ?></small><?php endif; ?></span></a><?php endforeach; ?>
+        </div></div>
+        <?php endforeach; ?>
+        <p class="sheet-none muted" hidden>Nenhum segmento com esse nome. <a href="<?= h(whatsapp_url('Olá! Não encontrei o segmento da minha empresa no site.')) ?>" target="_blank" rel="noopener">Fale com a equipe</a>.</p>
       </div>
     </div>
   </div>

@@ -253,7 +253,7 @@ site_header('cadastro');
       const fotos = []; // dataURLs
 
       // selects
-      SEGMENTOS.forEach(s => $('segmento').insertAdjacentHTML('beforeend', '<option value="' + s.slug + '">' + esc(s.nome) + '</option>'));
+      $('segmento').insertAdjacentHTML('beforeend', PP.segOptions());
       Store.cidades(true).forEach(c =>
         $('cidade').insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
       $('cidade').insertAdjacentHTML('beforeend', '<option value="outra">Minha cidade não está na lista</option>');
