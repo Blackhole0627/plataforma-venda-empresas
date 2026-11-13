@@ -129,7 +129,7 @@ site_header('home');
         </div>
         <div class="chip-rail" aria-label="Segmentos">
           <a class="seg-chip active" href="/comprar-empresa"><?= ic('layout-grid') ?>Todos</a>
-          <?php foreach (SEGMENTOS as $s): if (!$s['chip']) continue; ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
+          <?php foreach (segmentos() as $s): if (empty($s['chip'])) continue; ?><a class="seg-chip" href="/comprar-empresa?segmento=<?= $s['slug'] ?>"><?= ic($s['icon']) . h($s['nome']) ?></a><?php endforeach; ?>
           <button type="button" class="seg-chip seg-chip-all" data-sheet-open="sheet-segmentos"><?= ic('list') ?>Ver todos os segmentos</button>
         </div>
       </div>

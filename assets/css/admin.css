@@ -182,3 +182,29 @@ body.admin { background: #f2f4f6; }
 }
 
 .adm-initials { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #fff; font-weight: 700; font-size: .85rem; flex-shrink: 0; }
+
+/* listing editor: "Sob consulta" / "Não informado" under a field */
+.field label.na { display: inline-flex; align-items: center; gap: 7px; font-weight: 500; font-size: .84rem; color: var(--ink-2); cursor: pointer; align-self: flex-start; }
+.field label.na input { width: 16px; height: 16px; accent-color: var(--brand); margin: 0; }
+.input.na-on::placeholder { color: var(--brand); font-weight: 600; opacity: 1; }
+
+/* segments the team adds */
+.icon-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 6px; }
+.icon-pick button { height: 40px; border-radius: 10px; border: 1px solid var(--line); background: #fff; display: grid; place-items: center; cursor: pointer; color: var(--ink-2); }
+.icon-pick button:hover { border-color: var(--brand); color: var(--brand); }
+.icon-pick button.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+.icon-pick svg { width: 18px; height: 18px; }
+.seg-prev { margin: 4px 0 16px; padding: 12px; border: 1px dashed var(--line); border-radius: 12px; }
+.seg-prev .sheet-links { grid-template-columns: 1fr; margin-top: 6px; }
+.seg-prev .sheet-links a { padding: 4px 0; }
+.seg-ic { width: 38px; height: 38px; border-radius: 10px; background: var(--brand-50); color: var(--brand); display: grid; place-items: center; flex: none; }
+.seg-ic svg { width: 18px; height: 18px; }
+.seg-fixos summary { cursor: pointer; display: flex; flex-direction: column; gap: 2px; list-style: none; }
+.seg-fixos summary::-webkit-details-marker { display: none; }
+.seg-fixos summary .muted { font-size: .85rem; }
+.seg-fixos h3 { font-size: .92rem; margin: 18px 0 4px; }
+.seg-fixos p { margin: 0; font-size: .86rem; line-height: 1.6; }
+.btn[hidden] { display: none; }
+.seg-fixos { margin-top: 18px; }
+.adm-grid > *, .editor-grid > * { min-width: 0; }
+@media (max-width: 560px) { .sticky-actions .btn { flex: 1 1 0; min-width: 0; padding-left: 10px; padding-right: 10px; font-size: .88rem; white-space: normal; text-align: center; line-height: 1.2; } }

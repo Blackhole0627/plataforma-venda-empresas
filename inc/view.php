@@ -127,6 +127,18 @@ function site_footer(): void
 <?php
 }
 
+/* the team's own title, or "Restaurante à venda" (same as PP.anuncioTitulo) */
+function anuncio_titulo(array $a): string
+{
+    return ($a['titulo'] ?? '') !== '' ? $a['titulo'] : seg($a['segmento'])['nome'] . ' à venda';
+}
+
+/* a value, or the text for a field the team left out */
+function ou_vazio($v, callable $fmt, string $vazio = 'Não informado'): string
+{
+    return $v === null || $v === '' ? $vazio : (string) $fmt($v);
+}
+
 /* same markup as PP.card() in app.js */
 function card(array $a): string
 {
@@ -134,19 +146,20 @@ function card(array $a): string
     $where = cidade_label($a['cidade']);
     $url = anuncio_url($a);
     $foto = photo_url($a['fotos'][0] ?? ('u:' . $s['fotos'][0]), 640);
+    $titulo = anuncio_titulo($a);
     return '<article class="card-anuncio">' .
-        '<a class="card-media" href="' . $url . '" aria-label="' . h($s['nome'] . ' à venda em ' . $where) . '">' .
-        '<img src="' . h($foto) . '" alt="' . h($s['nome'] . ' à venda em ' . $where) . '" loading="lazy">' .
+        '<a class="card-media" href="' . $url . '" aria-label="' . h($titulo . ' em ' . $where) . '">' .
+        '<img src="' . h($foto) . '" alt="' . h($titulo . ' em ' . $where) . '" loading="lazy">' .
         '<span class="badge-seg">' . ic($s['icon']) . h($s['nome']) . '</span>' .
         ($a['destaque'] ? '<span class="badge-destaque">' . ic('star') . 'Destaque</span>' : '') .
         '</a>' .
         '<div class="card-body">' .
         '<div class="card-top"><button type="button" class="card-code" data-copy="' . h($a['codigo']) . '" title="Copiar código">Cód. ' . h($a['codigo']) . ic('copy') . '</button><span class="card-date">' . time_ago($a['data']) . '</span></div>' .
-        '<h3 class="card-title"><a href="' . $url . '">' . h($s['nome']) . ' à venda</a></h3>' .
+        '<h3 class="card-title"><a href="' . $url . '">' . h($titulo) . '</a></h3>' .
         '<p class="card-loc">' . ic('map-pin') . h(($a['bairro'] ? $a['bairro'] . ', ' : '') . $where) . '</p>' .
         '<div class="card-stats">' .
-        '<span class="cs-fat">' . ic('trending-up') . 'Faturamento (mês) <strong>' . money_short($a['faturamento']) . '</strong></span>' .
-        '<span title="Funcionários">' . ic('users') . (int) $a['funcionarios'] . ' func.</span>' .
+        '<span class="cs-fat">' . ic('trending-up') . 'Faturamento (mês) <strong>' . ou_vazio($a['faturamento'], 'money_short', 'Sob consulta') . '</strong></span>' .
+        ($a['funcionarios'] !== null ? '<span title="Funcionários">' . ic('users') . (int) $a['funcionarios'] . ' func.</span>' : '') .
         ($a['area'] ? '<span title="Área">' . ic('ruler') . num($a['area']) . ' m²</span>' : '') .
         '</div>' .
         '<div class="card-foot"><span class="card-price">' . money($a['preco']) . '</span>' .
@@ -200,7 +213,7 @@ function page_scripts(array $data = [], bool $admin = false): void
 {
     $boot = array_merge([
         'config' => config_js(),
-        'segmentos' => SEGMENTOS,
+        'segmentos' => segmentos(),
         'ufs' => UFS,
         'imagens' => IMAGENS,
         'equipe' => array_map(fn($p) => ['nome' => $p['nome'], 'cargo' => $p['cargo'], 'foto' => $p['foto'] ?? ''], equipe()),

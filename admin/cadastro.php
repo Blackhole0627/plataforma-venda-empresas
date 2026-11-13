@@ -21,6 +21,7 @@ admin_head($c ? 'Cadastro ' . $c['protocolo'] : 'Cadastro', 'cadastros');
       function render() {
         const c = Store.cadastro(id);
         if (!c) { $('content').innerHTML = '<div class="adm-empty">' + ic('search-x') + '<p>Cadastro não encontrado.</p><a class="btn btn-primary" href="/admin/">Voltar</a></div>'; PP.icons(); return; }
+        const mo = v => v == null ? '' : money(v); // left blank by the seller -> "-"
         const kv = (l, v, wide) => '<div' + (wide ? ' class="wide"' : '') + '><span>' + l + '</span><strong>' + esc(v === '' || v == null ? '-' : v) + '</strong></div>';
         const phone = c.responsavel.whatsapp.replace(/\D/g, '');
         // Instagram and site come from the seller, so only http(s) links are made clickable
@@ -55,9 +56,9 @@ admin_head($c ? 'Cadastro ' . $c['protocolo'] : 'Cadastro', 'cadastros');
               kv('Descrição', c.descricao, true) +
             '</div></section>' +
             '<section class="adm-panel"><h2>' + ic('bar-chart-3') + 'Valores</h2><div class="kv">' +
-              kv('Valor pedido', money(c.preco)) + kv('Faturamento/mês', money(c.faturamento)) + kv('Margem', c.margem ? c.margem + '%' : '') +
-              kv('Folha', money(c.folha)) + kv('Aluguel + cond.', money(c.aluguel)) + kv('Estoque', money(c.estoque)) +
-              kv('Equipamentos, móveis e instalações', money(c.bens)) + kv('Aceita proposta', c.aceitaProposta ? 'Sim' : 'Não') +
+              kv('Valor pedido', money(c.preco)) + kv('Faturamento/mês', money(c.faturamento)) + kv('Margem', c.margem == null ? '' : c.margem + '%') +
+              kv('Folha', mo(c.folha)) + kv('Aluguel + cond.', mo(c.aluguel)) + kv('Estoque', mo(c.estoque)) +
+              kv('Equipamentos, móveis e instalações', mo(c.bens)) + kv('Aceita proposta', c.aceitaProposta ? 'Sim' : 'Não') +
               kv('Venda com CNPJ', c.cnpj) + kv('Marca inclusa', c.marca ? 'Sim' : 'Não') +
               kv('Aceitou a comissão', c.aceiteComissao ? 'Sim' : 'Não') +
               kv('Motivo da venda (interno)', c.motivo, true) +

@@ -36,7 +36,7 @@ $list = array_values(array_filter($all, function ($a) use ($cidadeSlug, $segs, $
     if ($segs && !in_array($a['segmento'], $segs, true)) return false;
     if ($a['preco'] < $min || ($max < MAXV && $a['preco'] > $max)) return false;
     if ($qn !== '') {
-        $hay = str_replace('-', ' ', slugify(implode(' ', [$a['codigo'], $a['bairro'], seg($a['segmento'])['nome'], cidade_label($a['cidade']), $a['descricao']])));
+        $hay = str_replace('-', ' ', slugify(implode(' ', [$a['codigo'], $a['titulo'], $a['bairro'], seg($a['segmento'])['nome'], cidade_label($a['cidade']), $a['descricao']])));
         if (!str_contains($hay, $qn)) return false;
     }
     return true;
@@ -225,7 +225,7 @@ site_header('comprar');
           (!state.cidade || a.cidade === state.cidade) &&
           (!state.segs.length || state.segs.includes(a.segmento)) &&
           a.preco >= state.min && (state.max >= MAXV || a.preco <= state.max) &&
-          (!q || PP.slugify([a.codigo, a.bairro, PP.seg(a.segmento).nome, PP.cidadeLabel(a.cidade), a.descricao].join(' ')).replace(/-/g, ' ').includes(q))
+          (!q || PP.slugify([a.codigo, a.titulo, a.bairro, PP.seg(a.segmento).nome, PP.cidadeLabel(a.cidade), a.descricao].join(' ')).replace(/-/g, ' ').includes(q))
         );
         const sorters = {
           recentes: (x, y) => y.data - x.data,

@@ -167,17 +167,48 @@ const STATUS_CADASTRO = ['novo', 'analise', 'publicado', 'recusado'];
 const STATUS_ANUNCIO = ['rascunho', 'publicado', 'pausado'];
 const VENDA_CNPJ = ['Sim', 'Não', 'Indiferente'];
 
+/* icons the team can pick for a segment they add (all exist in Lucide 0.460) */
+const SEG_ICONES = ['store', 'briefcase', 'shopping-bag', 'utensils', 'coffee', 'wine', 'beer', 'cake-slice', 'ice-cream-cone',
+    'wrench', 'hammer', 'scissors', 'sparkles', 'heart-pulse', 'stethoscope', 'pill', 'dumbbell', 'graduation-cap', 'baby',
+    'paw-print', 'car', 'bike', 'truck', 'tractor', 'building-2', 'house', 'hotel', 'factory', 'laptop', 'smartphone', 'camera',
+    'printer', 'music', 'gamepad-2', 'palette', 'shirt', 'gift', 'flower', 'leaf', 'sun', 'plane', 'tent', 'fish', 'package', 'book-open', 'key'];
+
+/*
+ * The fixed list plus the segments the team added in the team area (ajustes 'segmentos_extra').
+ * An added segment goes to the end of its group; in "Outros" it goes before "outros", which stays last.
+ * Added segments use the "Outros" illustrative photos.
+ */
+function segmentos(bool $reload = false): array
+{
+    static $all = null;
+    if ($all !== null && !$reload) return $all;
+    $all = SEGMENTOS;
+    $extra = function_exists('segmentos_extra') ? segmentos_extra($reload) : [];
+    $fotos = SEGMENTOS[count(SEGMENTOS) - 1]['fotos'];
+    foreach ($extra as $e) {
+        $e += ['chip' => false, 'fotos' => $fotos, 'extra' => true];
+        $at = null;
+        foreach ($all as $i => $s) {
+            if ($s['slug'] === 'outros') { if ($e['grupo'] === $s['grupo']) $at = $i; break; }
+            if ($s['grupo'] === $e['grupo']) $at = $i + 1;
+        }
+        array_splice($all, $at ?? count($all) - 1, 0, [$e]);
+    }
+    return $all;
+}
+
 function seg(?string $slug): array
 {
-    foreach (SEGMENTOS as $s) {
+    $all = segmentos();
+    foreach ($all as $s) {
         if ($s['slug'] === $slug) return $s;
     }
-    return SEGMENTOS[count(SEGMENTOS) - 1];
+    return $all[count($all) - 1];
 }
 
 function seg_exists(?string $slug): bool
 {
-    foreach (SEGMENTOS as $s) {
+    foreach (segmentos() as $s) {
         if ($s['slug'] === $slug) return true;
     }
     return false;
@@ -193,7 +224,7 @@ function seg_label(array $s): string
 function seg_grupos(): array
 {
     $g = [];
-    foreach (SEGMENTOS as $s) $g[$s['grupo']][] = $s;
+    foreach (segmentos() as $s) $g[$s['grupo']][] = $s;
     return $g;
 }
 

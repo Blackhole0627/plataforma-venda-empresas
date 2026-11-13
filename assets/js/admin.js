@@ -35,6 +35,7 @@
         link('/admin/', 'inbox', 'Cadastros recebidos', 'cadastros', novos ? '<span class="count">' + novos + '</span>' : '') +
         link('/admin/anuncios', 'megaphone', 'Anúncios', 'anuncios') +
         link('/admin/cidades', 'map-pin', 'Cidades', 'cidades') +
+        link('/admin/segmentos', 'layout-grid', 'Segmentos', 'segmentos') +
         link('/admin/mensagens', 'mail', 'Mensagens do site', 'mensagens') +
       '</nav>' +
       '<div class="side-bottom">' +
@@ -57,7 +58,7 @@
 
   /* plain-text summary for the team to paste anywhere */
   function cadastroTexto(c) {
-    const m = PP.money;
+    const m = v => v == null ? '-' : PP.money(v);
     return [
       'Protocolo: ' + c.protocolo,
       'Responsável: ' + c.responsavel.nome + ' | ' + c.responsavel.whatsapp + ' | ' + c.responsavel.email,
@@ -67,9 +68,9 @@
       'Instagram: ' + (c.empresa.instagram || '-') + ' | Site: ' + (c.empresa.site || '-'),
       'Segmento: ' + PP.seg(c.segmento).nome,
       'Cidade: ' + (c.cidade ? PP.cidadeLabel(c.cidade) : c.cidadeOutra) + ' | Bairro: ' + c.bairro,
-      'Fundação: ' + c.fundacao + ' | Funcionários: ' + c.funcionarios + ' | Área: ' + c.area + ' m²',
+      'Fundação: ' + c.fundacao + ' | Funcionários: ' + c.funcionarios + ' | Área: ' + (c.area ? c.area + ' m²' : '-'),
       'Horário: ' + (c.horario || '-'),
-      'Valor pedido: ' + m(c.preco) + ' | Faturamento/mês: ' + m(c.faturamento) + ' | Margem: ' + (c.margem || '-') + '%',
+      'Valor pedido: ' + m(c.preco) + ' | Faturamento/mês: ' + m(c.faturamento) + ' | Margem: ' + (c.margem == null ? '-' : c.margem + '%'),
       'Folha: ' + m(c.folha) + ' | Aluguel: ' + m(c.aluguel) + ' | Estoque: ' + m(c.estoque),
       'Equipamentos, móveis e instalações: ' + m(c.bens) + ' | Aceita proposta: ' + (c.aceitaProposta ? 'Sim' : 'Não'),
       'Imóvel: ' + imovelTexto(c.imovel) + ' | Energia solar: ' + (c.energiaSolar ? 'Sim' : 'Não') + ' | Aceitou a comissão: ' + (c.aceiteComissao ? 'Sim' : 'Não'),

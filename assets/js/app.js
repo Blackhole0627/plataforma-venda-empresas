@@ -51,23 +51,27 @@
   function ic(name, cls) { return '<i data-lucide="' + name + '"' + (cls ? ' class="' + cls + '"' : '') + '></i>'; }
 
   /* ---------- listing card ---------- */
+  /* the team's own title, or "Restaurante à venda" (same as anuncio_titulo() in PHP) */
+  function anuncioTitulo(a) { return (a.titulo || '').trim() || seg(a.segmento).nome + ' à venda'; }
+
   function card(a) {
     const s = seg(a.segmento);
     const foto = PP.photoUrl(a.fotos[0] || ('u:' + s.fotos[0]), 640);
+    const titulo = anuncioTitulo(a);
     return '' +
       '<article class="card-anuncio">' +
-        '<a class="card-media" href="' + anuncioUrl(a) + '" aria-label="' + esc(s.nome + ' à venda em ' + cidadeLabel(a.cidade)) + '">' +
-          '<img src="' + foto + '" alt="' + esc(s.nome) + ' à venda em ' + esc(cidadeLabel(a.cidade)) + '" loading="lazy">' +
+        '<a class="card-media" href="' + anuncioUrl(a) + '" aria-label="' + esc(titulo + ' em ' + cidadeLabel(a.cidade)) + '">' +
+          '<img src="' + foto + '" alt="' + esc(titulo + ' em ' + cidadeLabel(a.cidade)) + '" loading="lazy">' +
           '<span class="badge-seg">' + ic(s.icon) + esc(s.nome) + '</span>' +
           (a.destaque ? '<span class="badge-destaque">' + ic('star') + 'Destaque</span>' : '') +
         '</a>' +
         '<div class="card-body">' +
           '<div class="card-top"><button type="button" class="card-code" data-copy="' + esc(a.codigo) + '" title="Copiar código">Cód. ' + esc(a.codigo) + ic('copy') + '</button><span class="card-date">' + timeAgo(a.data) + '</span></div>' +
-          '<h3 class="card-title"><a href="' + anuncioUrl(a) + '">' + esc(s.nome) + ' à venda</a></h3>' +
+          '<h3 class="card-title"><a href="' + anuncioUrl(a) + '">' + esc(titulo) + '</a></h3>' +
           '<p class="card-loc">' + ic('map-pin') + esc(a.bairro ? a.bairro + ', ' : '') + esc(cidadeLabel(a.cidade)) + '</p>' +
           '<div class="card-stats">' +
-            '<span class="cs-fat">' + ic('trending-up') + 'Faturamento (mês) <strong>' + moneyShort(a.faturamento) + '</strong></span>' +
-            '<span title="Funcionários">' + ic('users') + a.funcionarios + ' func.</span>' +
+            '<span class="cs-fat">' + ic('trending-up') + 'Faturamento (mês) <strong>' + (a.faturamento == null ? 'Sob consulta' : moneyShort(a.faturamento)) + '</strong></span>' +
+            (a.funcionarios == null ? '' : '<span title="Funcionários">' + ic('users') + a.funcionarios + ' func.</span>') +
             (a.area ? '<span title="Área">' + ic('ruler') + num(a.area) + ' m²</span>' : '') +
           '</div>' +
           '<div class="card-foot"><span class="card-price">' + money(a.preco) + '</span>' +
@@ -295,7 +299,7 @@
 
   Object.assign(PP, {
     CONFIG, PRETTY, money, moneyShort, num, dateBR, timeAgo, esc, param, seg, cidade, cidadeLabel,
-    anuncioSlug, anuncioUrl, cidadeUrl, segmentoUrl, whatsappUrl, icons, ic, card, toast, setMeta, jsonLd,
+    anuncioSlug, anuncioUrl, anuncioTitulo, cidadeUrl, segmentoUrl, whatsappUrl, icons, ic, card, toast, setMeta, jsonLd,
     masks, bindMasks, unmoney, resizeImage, dataUrlToBlob, logo, track, setTab, copyText
   });
 

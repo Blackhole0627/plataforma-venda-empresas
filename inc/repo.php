@@ -52,6 +52,44 @@ function ajuste_salvar(string $k, $v): void
     db()->prepare('INSERT INTO ajustes (chave, valor) VALUES (?, ?) ON DUPLICATE KEY UPDATE valor = VALUES(valor)')->execute([$k, (string) $v]);
 }
 
+/* segments the team added: [{slug, nome, desc, grupo, icon}] in ajustes 'segmentos_extra' */
+function segmentos_extra(bool $reload = false): array
+{
+    static $list = null;
+    if ($list !== null && !$reload) return $list;
+    $list = [];
+    try {
+        $st = db()->prepare('SELECT valor FROM ajustes WHERE chave = ?');
+        $st->execute(['segmentos_extra']);
+        $raw = json_decode((string) $st->fetchColumn(), true);
+    } catch (Throwable $e) { $raw = null; }
+    foreach ((array) $raw as $e) {
+        if (!is_array($e) || empty($e['slug']) || empty($e['nome']) || empty($e['grupo'])) continue;
+        $list[] = ['slug' => (string) $e['slug'], 'nome' => (string) $e['nome'], 'desc' => (string) ($e['desc'] ?? ''),
+            'icon' => in_array($e['icon'] ?? '', SEG_ICONES, true) ? $e['icon'] : 'store', 'grupo' => (string) $e['grupo']];
+    }
+    return $list;
+}
+
+function segmentos_extra_salvar(array $list): void
+{
+    $out = array_map(fn($e) => ['slug' => $e['slug'], 'nome' => $e['nome'], 'desc' => $e['desc'], 'grupo' => $e['grupo'], 'icon' => $e['icon']], array_values($list));
+    ajuste_salvar('segmentos_extra', json_encode($out, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+    segmentos(true);
+}
+
+/* how many listings and submissions use a segment */
+function segmento_uso(string $slug): int
+{
+    $st = db()->prepare('SELECT (SELECT COUNT(*) FROM anuncios WHERE segmento = ?) + (SELECT COUNT(*) FROM cadastros WHERE segmento = ?)');
+    $st->execute([$slug, $slug]);
+    return (int) $st->fetchColumn();
+}
+
+/* null = left out on purpose: the site shows "Sob consulta" (faturamento, margem, folha) or "Não informado" */
+function int_ou_null($v): ?int { return $v === null || $v === '' ? null : (int) $v; }
+function float_ou_null($v): ?float { return $v === null || $v === '' ? null : (float) $v; }
+
 /* 8 -> "8%", 7.5 -> "7,5%" */
 function pct($v): string
 {
@@ -86,19 +124,19 @@ function cidade_label(string $slug): string
 }
 
 /* ---------- anúncios ---------- */
-const ANUNCIO_FIELDS = ['segmento', 'cidade', 'bairro', 'descricao', 'fundacao', 'funcionarios', 'area', 'horario',
+const ANUNCIO_FIELDS = ['titulo', 'segmento', 'cidade', 'bairro', 'descricao', 'fundacao', 'funcionarios', 'area', 'horario',
     'venda_cnpj', 'marca', 'preco', 'faturamento', 'margem', 'folha', 'aluguel', 'estoque', 'bens', 'aceita_proposta', 'destaque', 'foto_tipo', 'fotos'];
 
 function anuncio_js(array $r): array
 {
     return [
-        'id' => (int) $r['id'], 'codigo' => $r['codigo'], 'status' => $r['status'],
+        'id' => (int) $r['id'], 'codigo' => $r['codigo'], 'status' => $r['status'], 'titulo' => (string) ($r['titulo'] ?? ''),
         'segmento' => $r['segmento'], 'cidade' => $r['cidade'], 'bairro' => $r['bairro'],
-        'descricao' => $r['descricao'], 'fundacao' => (int) $r['fundacao'], 'funcionarios' => (int) $r['funcionarios'],
-        'area' => (int) $r['area'], 'horario' => $r['horario'], 'cnpj' => $r['venda_cnpj'], 'marca' => (bool) $r['marca'],
-        'preco' => (int) $r['preco'], 'faturamento' => (int) $r['faturamento'], 'margem' => (float) $r['margem'],
-        'folha' => (int) $r['folha'], 'aluguel' => (int) $r['aluguel'], 'estoque' => (int) $r['estoque'],
-        'bens' => (int) $r['bens'], 'aceitaProposta' => (bool) $r['aceita_proposta'],
+        'descricao' => $r['descricao'], 'fundacao' => (int) $r['fundacao'], 'funcionarios' => int_ou_null($r['funcionarios']),
+        'area' => int_ou_null($r['area']), 'horario' => $r['horario'], 'cnpj' => $r['venda_cnpj'], 'marca' => (bool) $r['marca'],
+        'preco' => (int) $r['preco'], 'faturamento' => int_ou_null($r['faturamento']), 'margem' => float_ou_null($r['margem']),
+        'folha' => int_ou_null($r['folha']), 'aluguel' => int_ou_null($r['aluguel']), 'estoque' => int_ou_null($r['estoque']),
+        'bens' => int_ou_null($r['bens']), 'aceitaProposta' => (bool) $r['aceita_proposta'],
         'destaque' => (bool) $r['destaque'], 'fotoTipo' => $r['foto_tipo'],
         'fotos' => json_decode($r['fotos'] ?: '[]', true) ?: [],
         'cadastroId' => $r['cadastro_id'] ? (int) $r['cadastro_id'] : null,
@@ -143,24 +181,27 @@ function anuncio_salvar(array $d): array
     if ($id && !$old) return [null, 'Anúncio não encontrado.'];
 
     $status = in_array($d['status'] ?? '', STATUS_ANUNCIO, true) ? $d['status'] : 'rascunho';
+    /* blank or null = not shown on the site; a typed 0 stays 0 */
+    $opt = fn($k) => (!isset($d[$k]) || $d[$k] === '') ? null : max(0, (int) $d[$k]);
     $row = [
+        'titulo' => mb_substr(trim(preg_replace('/\s+/u', ' ', (string) ($d['titulo'] ?? ''))), 0, 120),
         'segmento' => seg_exists($d['segmento'] ?? '') ? $d['segmento'] : '',
         'cidade' => (string) ($d['cidade'] ?? ''),
         'bairro' => mb_substr(trim((string) ($d['bairro'] ?? '')), 0, 120),
         'descricao' => mb_substr(trim((string) ($d['descricao'] ?? '')), 0, 3000),
         'fundacao' => max(0, min((int) date('Y'), (int) ($d['fundacao'] ?? 0))) ?: null,
-        'funcionarios' => max(0, (int) ($d['funcionarios'] ?? 0)),
-        'area' => max(0, (int) ($d['area'] ?? 0)),
+        'funcionarios' => $opt('funcionarios'),
+        'area' => $opt('area') ?: null,
         'horario' => mb_substr(trim((string) ($d['horario'] ?? '')), 0, 160),
         'venda_cnpj' => in_array($d['cnpj'] ?? '', VENDA_CNPJ, true) ? $d['cnpj'] : 'Indiferente',
         'marca' => !empty($d['marca']) ? 1 : 0,
         'preco' => max(0, (int) ($d['preco'] ?? 0)),
-        'faturamento' => max(0, (int) ($d['faturamento'] ?? 0)),
-        'margem' => max(0, min(100, (float) ($d['margem'] ?? 0))),
-        'folha' => max(0, (int) ($d['folha'] ?? 0)),
-        'aluguel' => max(0, (int) ($d['aluguel'] ?? 0)),
-        'estoque' => max(0, (int) ($d['estoque'] ?? 0)),
-        'bens' => max(0, (int) ($d['bens'] ?? 0)),
+        'faturamento' => $opt('faturamento'),
+        'margem' => (!isset($d['margem']) || $d['margem'] === '') ? null : max(0, min(100, (float) $d['margem'])),
+        'folha' => $opt('folha'),
+        'aluguel' => $opt('aluguel'),
+        'estoque' => $opt('estoque'),
+        'bens' => $opt('bens') ?: null,
         'aceita_proposta' => !empty($d['aceitaProposta']) ? 1 : 0,
         'destaque' => !empty($d['destaque']) ? 1 : 0,
         'fotos' => json_encode(fotos_limpas($d['fotos'] ?? []), JSON_UNESCAPED_SLASHES),
@@ -173,6 +214,7 @@ function anuncio_salvar(array $d): array
     $row['foto_tipo'] = array_filter($fotos, fn($f) => !str_starts_with($f, 'u:')) ? 'reais' : 'ilustrativas';
 
     if (!$row['segmento']) return [null, 'Escolha o segmento.'];
+    if ($row['titulo'] !== '' && mb_strlen($row['titulo']) < 5) return [null, 'O título precisa de pelo menos 5 letras. Ou deixe em branco pra usar o nome do segmento.'];
     if (!cidade($row['cidade'])) return [null, 'Escolha uma cidade cadastrada.'];
     if (mb_strlen($row['bairro']) < 2) return [null, 'Digite o bairro.'];
     if (mb_strlen($row['descricao']) < 30) return [null, 'A descrição precisa de pelo menos 30 caracteres.'];
@@ -246,10 +288,10 @@ function cadastro_js(array $r): array
         'endereco' => ['cep' => $r['cep'], 'rua' => $r['rua'], 'numero' => $r['numero'], 'complemento' => $r['complemento']],
         'segmento' => $r['segmento'], 'cidade' => $r['cidade'] ?: '', 'cidadeOutra' => $r['cidade_outra'] ?: '',
         'bairro' => $r['bairro'], 'fundacao' => (int) $r['fundacao'], 'funcionarios' => (int) $r['funcionarios'],
-        'area' => (int) $r['area'], 'horario' => $r['horario'], 'descricao' => $r['descricao'],
-        'preco' => (int) $r['preco'], 'faturamento' => (int) $r['faturamento'], 'margem' => (float) $r['margem'],
-        'folha' => (int) $r['folha'], 'aluguel' => (int) $r['aluguel'], 'estoque' => (int) $r['estoque'],
-        'bens' => (int) $r['bens'], 'energiaSolar' => (bool) $r['energia_solar'], 'imovel' => $r['imovel'],
+        'area' => int_ou_null($r['area']), 'horario' => $r['horario'], 'descricao' => $r['descricao'],
+        'preco' => (int) $r['preco'], 'faturamento' => (int) $r['faturamento'], 'margem' => float_ou_null($r['margem']),
+        'folha' => int_ou_null($r['folha']), 'aluguel' => int_ou_null($r['aluguel']), 'estoque' => int_ou_null($r['estoque']),
+        'bens' => int_ou_null($r['bens']), 'energiaSolar' => (bool) $r['energia_solar'], 'imovel' => $r['imovel'],
         'aceitaProposta' => (bool) $r['aceita_proposta'], 'aceiteComissao' => (bool) $r['aceite_comissao'],
         'cnpj' => $r['venda_cnpj'], 'marca' => (bool) $r['marca'], 'motivo' => $r['motivo'],
         'fotoTipo' => $r['foto_tipo'], 'fotos' => json_decode($r['fotos'] ?: '[]', true) ?: [],

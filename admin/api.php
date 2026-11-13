@@ -75,6 +75,45 @@ switch ($action) {
         db()->prepare('UPDATE cidades SET instagram = ? WHERE slug = ?')->execute([$ig ?: null, $c['slug']]);
         json_out(['cidade' => cidade($c['slug'])]);
 
+    /* ---------- segmentos adicionados pela equipe ---------- */
+    case 'segmento.salvar':
+        $lista = segmentos_extra();
+        $slug = (string) ($d['slug'] ?? '');
+        $idx = null;
+        foreach ($lista as $i => $e) if ($e['slug'] === $slug) $idx = $i;
+        if ($slug !== '' && $idx === null) json_error('Esse segmento não existe mais. Recarregue a página.', 404);
+        $nome = trim(preg_replace('/\s+/u', ' ', (string) ($d['nome'] ?? '')));
+        $nome = mb_strtoupper(mb_substr($nome, 0, 1)) . mb_substr($nome, 1, 39);
+        $desc = mb_substr(trim(preg_replace('/\s+/u', ' ', (string) ($d['desc'] ?? ''))), 0, 60);
+        $grupo = (string) ($d['grupo'] ?? '');
+        $icon = in_array($d['icon'] ?? '', SEG_ICONES, true) ? $d['icon'] : 'store';
+        if (mb_strlen($nome) < 2) json_error('Digite o nome do segmento.', 422);
+        if (!in_array($grupo, array_column(SEGMENTOS, 'grupo'), true)) json_error('Escolha o grupo.', 422);
+        foreach (segmentos() as $s) {
+            if ($s['slug'] !== $slug && slugify($s['nome']) === slugify($nome)) json_error('Já existe o segmento ' . $s['nome'] . '.', 422);
+        }
+        $novo = ['nome' => $nome, 'desc' => $desc, 'grupo' => $grupo, 'icon' => $icon];
+        if ($idx !== null) {
+            $lista[$idx] = $novo + ['slug' => $slug];
+        } else {
+            if (count($lista) >= 100) json_error('Limite de 100 segmentos adicionados.', 422);
+            $base = trim(substr(slugify($nome), 0, 36), '-') ?: 'segmento';
+            $slug = $base;
+            for ($n = 2; seg_exists($slug); $n++) $slug = $base . '-' . $n;
+            $lista[] = $novo + ['slug' => $slug];
+        }
+        segmentos_extra_salvar($lista);
+        json_out(['segmento' => seg($slug), 'segmentos' => segmentos_extra()]);
+
+    case 'segmento.remover':
+        $slug = (string) ($d['slug'] ?? '');
+        $lista = array_values(array_filter(segmentos_extra(), fn($e) => $e['slug'] !== $slug));
+        if (count($lista) === count(segmentos_extra())) json_error('Só dá pra remover segmentos adicionados pela equipe.', 422);
+        $n = segmento_uso($slug);
+        if ($n) json_error('Esse segmento tem ' . $n . ($n === 1 ? ' anúncio ou cadastro' : ' anúncios ou cadastros') . '. Troque o segmento deles antes de remover.', 422);
+        segmentos_extra_salvar($lista);
+        json_out(['segmentos' => segmentos_extra()]);
+
     /* ---------- valores ---------- */
     case 'ajustes.salvar':
         $num = fn($v) => (float) str_replace(',', '.', str_replace('.', '', preg_replace('/[^\d,.]/', '', (string) $v)));

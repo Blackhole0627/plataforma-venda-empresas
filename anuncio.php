@@ -18,12 +18,18 @@ if ($visivel && $slug !== anuncio_slug($a)) redirect($url, 301);
 
 $s = seg($a['segmento']);
 $where = $cid ? $cid['nome'] . '/' . $cid['uf'] : $a['cidade'];
-$title = $s['nome'] . ' à venda em ' . $where;
+/* the team's own title when there is one, else "Restaurante à venda em Curitiba/PR" */
+$title = $a['titulo'] !== '' ? $a['titulo'] : $s['nome'] . ' à venda em ' . $where;
 $fotos = $a['fotos'] ?: seg_fotos($a['segmento']);
 $consultor = consultor_para($cid['uf'] ?? '');
-$waText = 'Olá! Tenho interesse no anúncio ' . $a['codigo'] . ' (' . $s['nome'] . ' em ' . $where . ', ' . money($a['preco']) . '). Pode me passar mais informações?';
+$waText = 'Olá! Tenho interesse no anúncio ' . $a['codigo'] . ' (' . ($a['titulo'] !== '' ? $a['titulo'] : $s['nome']) . ' em ' . $where . ', ' . money($a['preco']) . '). Pode me passar mais informações?';
 $anos = $a['fundacao'] ? (int) date('Y') - $a['fundacao'] : null;
 $bairroWhere = ($a['bairro'] ? $a['bairro'] . ', ' : '') . $where;
+$metaDesc = ($a['titulo'] !== '' ? $a['titulo'] . '. ' : '') . $s['nome'] . ' à venda em ' . $bairroWhere . ' por ' . money($a['preco']) . '.' .
+    ($a['faturamento'] !== null ? ' Faturamento médio de ' . money($a['faturamento']) . '/mês.' : '') .
+    ($a['funcionarios'] !== null ? ' ' . $a['funcionarios'] . ($a['funcionarios'] === 1 ? ' funcionário.' : ' funcionários.') : '') .
+    ' Código ' . $a['codigo'] . '.';
+$pct = fn($v) => rtrim(rtrim(number_format($v, 1, ',', ''), '0'), ',') . '%';
 /* map shows the bairro only, never the street */
 $mapaUrl = 'https://maps.google.com/maps?q=' . rawurlencode(($a['bairro'] ? $a['bairro'] . ', ' : '') . ($cid ? $cid['nome'] . ' - ' . $cid['uf'] : $a['cidade']) . ', Brasil') . '&z=14&output=embed';
 
@@ -32,8 +38,8 @@ $similares = array_slice(array_values(array_filter(anuncios_publicados(),
 
 $pageUrl = site_url($url);
 page_head([
-    'title' => $title . ' · ' . money($a['preco']) . ' · ' . cfg('marca'),
-    'description' => $s['nome'] . ' à venda em ' . $bairroWhere . ' por ' . money($a['preco']) . '. Faturamento médio de ' . money($a['faturamento']) . '/mês, ' . $a['funcionarios'] . ' funcionários. Código ' . $a['codigo'] . '.',
+    'title' => ($a['titulo'] !== '' ? $a['titulo'] . ' · ' . $where : $title) . ' · ' . money($a['preco']) . ' · ' . cfg('marca'),
+    'description' => $metaDesc,
     'canonical' => $url,
     'image' => photo_url($fotos[0], 1200),
     'page' => 'comprar',
@@ -82,20 +88,20 @@ $gal = array_slice($fotos, 0, 3);
     <div class="detail-layout"><div>
       <section class="panel"><h2><?= ic('file-text') ?>Sobre o negócio</h2><p style="margin:0;white-space:pre-line"><?= h($a['descricao']) ?></p></section>
       <section class="panel"><h2><?= ic('building-2') ?>Estrutura e operação</h2><div class="data-grid">
-        <?= $a['fundacao'] ? $item('calendar-check', 'Fundação', $a['fundacao'] . ' (' . $anos . ($anos === 1 ? ' ano' : ' anos') . ')') : '' ?>
-        <?= $item('users', 'Funcionários', $a['funcionarios']) ?>
-        <?= $a['area'] ? $item('ruler', 'Área', num($a['area']) . ' m²') : '' ?>
-        <?= $item('clock', 'Funcionamento', $a['horario']) ?>
+        <?= $item('calendar-check', 'Fundação', $a['fundacao'] ? $a['fundacao'] . ' (' . $anos . ($anos === 1 ? ' ano' : ' anos') . ')' : 'Não informado') ?>
+        <?= $item('users', 'Funcionários', ou_vazio($a['funcionarios'], 'num')) ?>
+        <?= $item('ruler', 'Área', $a['area'] ? num($a['area']) . ' m²' : 'Não informado') ?>
+        <?= $item('clock', 'Funcionamento', ou_vazio($a['horario'], 'strval')) ?>
         <?= $item('file-badge', 'Venda com CNPJ', $a['cnpj']) ?>
         <?= $item('badge-check', 'Marca inclusa', $a['marca'] ? 'Sim' : 'Não') ?>
       </div></section>
       <section class="panel"><h2><?= ic('bar-chart-3') ?>Números do negócio</h2><div class="data-grid">
-        <?= $item('trending-up', 'Faturamento médio/mês', money($a['faturamento'])) ?>
-        <?= $item('percent', 'Margem de lucro', $a['margem'] ? rtrim(rtrim(number_format($a['margem'], 1, ',', ''), '0'), ',') . '%' : 'A apurar') ?>
-        <?= $item('wallet', 'Folha de pagamento', money($a['folha'])) ?>
-        <?= $item('home', 'Aluguel + condomínio', $a['aluguel'] ? money($a['aluguel']) : 'Imóvel próprio') ?>
-        <?= $item('package', 'Estoque atual', $a['estoque'] ? money($a['estoque']) : 'Sem estoque') ?>
-        <?= $a['bens'] ? $item('armchair', 'Bens incluídos na venda', money($a['bens'])) : '' ?>
+        <?= $item('trending-up', 'Faturamento médio/mês', ou_vazio($a['faturamento'], 'money', 'Sob consulta')) ?>
+        <?= $item('percent', 'Margem de lucro', ou_vazio($a['margem'], fn($v) => $v ? $pct($v) : 'A apurar', 'Sob consulta')) ?>
+        <?= $item('wallet', 'Folha de pagamento', ou_vazio($a['folha'], 'money', 'Sob consulta')) ?>
+        <?= $item('home', 'Aluguel + condomínio', ou_vazio($a['aluguel'], fn($v) => $v ? money($v) : 'Imóvel próprio')) ?>
+        <?= $item('package', 'Estoque atual', ou_vazio($a['estoque'], fn($v) => $v ? money($v) : 'Sem estoque')) ?>
+        <?= $item('armchair', 'Bens incluídos na venda', $a['bens'] ? money($a['bens']) : 'Não informado') ?>
         <?= $item('tag', 'Valor pedido', money($a['preco'])) ?>
         <?= $item('handshake', 'Aceita proposta', $a['aceitaProposta'] ? 'Sim' : 'Não') ?>
       </div></section>
@@ -115,7 +121,7 @@ $gal = array_slice($fotos, 0, 3);
         <li><span>Código</span><strong><button type="button" class="copy-code" data-copy="<?= h($a['codigo']) ?>" title="Copiar código"><?= h($a['codigo']) ?><?= ic('copy') ?></button></strong></li>
         <li><span>Segmento</span><strong><?= h($s['nome']) ?></strong></li>
         <li><span>Local</span><strong><?= h($bairroWhere) ?></strong></li>
-        <li><span>Faturamento/mês</span><strong><?= money($a['faturamento']) ?></strong></li>
+        <li><span>Faturamento/mês</span><strong><?= ou_vazio($a['faturamento'], 'money', 'Sob consulta') ?></strong></li>
         <?php if ($a['area']): ?><li><span>Área</span><strong><?= num($a['area']) ?> m²</strong></li><?php endif; ?>
       </ul>
       <?php if ($ig = instagram_da_cidade($cid)): ?><a class="city-ig light" href="<?= h($ig['url']) ?>" target="_blank" rel="noopener"><?= ic('instagram') ?><span>Mais empresas em <?= h($cid['nome'] ?? '') ?> no <strong><?= h($ig['handle']) ?></strong></span></a><?php endif; ?>

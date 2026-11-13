@@ -38,14 +38,14 @@ admin_head('Anúncios', 'anuncios');
           .map(([k, l]) => '<button data-f="' + k + '" class="' + (filtro === k ? 'active' : '') + '">' + l + '</button>').join('');
         const term = PP.slugify(q);
         const list = all.filter(a => (filtro === 'todos' || a.status === filtro) &&
-          (!term || PP.slugify([a.codigo, PP.seg(a.segmento).nome, PP.cidadeLabel(a.cidade), a.bairro].join(' ')).includes(term)));
+          (!term || PP.slugify([a.codigo, a.titulo, PP.seg(a.segmento).nome, PP.cidadeLabel(a.cidade), a.bairro].join(' ')).includes(term)));
 
         $('rows').innerHTML = list.length ? list.map(a => {
           const s = PP.seg(a.segmento);
           const foto = PP.photoUrl(a.fotos[0] || s.fotos[0], 200);
           const viewUrl = PP.anuncioUrl(a) + (a.status === 'publicado' ? '' : '?preview=1');
           return '<tr data-id="' + a.id + '">' +
-            '<td><div class="t-flex"><img class="t-thumb" src="' + foto + '" alt=""><div><span class="t-main">' + esc(s.nome) + ' em ' + esc(PP.cidadeLabel(a.cidade)) + '</span><span class="t-sub">' + esc(a.codigo) + ' · ' + esc(a.bairro) + '</span></div></div></td>' +
+            '<td><div class="t-flex"><img class="t-thumb" src="' + foto + '" alt=""><div><span class="t-main">' + esc(a.titulo || s.nome) + ' em ' + esc(PP.cidadeLabel(a.cidade)) + '</span><span class="t-sub">' + esc(a.codigo) + ' · ' + (a.titulo ? esc(s.nome) + ' · ' : '') + esc(a.bairro) + '</span></div></div></td>' +
             '<td data-l="Valor"><strong>' + money(a.preco) + '</strong></td>' +
             '<td>' + A.statusPill(a.status) + '</td>' +
             '<td data-l="Destaque"><button class="icon-btn' + (a.destaque ? ' on' : '') + '" data-act="destaque" title="Destaque na home" aria-label="Destaque">' + ic('star') + '</button></td>' +

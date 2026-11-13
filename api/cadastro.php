@@ -15,6 +15,8 @@ if ((int) $st->fetchColumn() >= 5) json_error('Muitos cadastros seguidos. Tenta 
 
 $str = fn($v, $max = 160) => mb_substr(trim((string) ($v ?? '')), 0, $max);
 $int = fn($v) => max(0, (int) ($v ?? 0));
+/* optional numbers the seller left blank stay NULL (shown as "Não informado", never as zero) */
+$opt = fn($v) => ($v === null || $v === '') ? null : max(0, (int) $v);
 
 $r = [
     'resp_nome' => $str($d['responsavel']['nome'] ?? '', 120),
@@ -35,16 +37,16 @@ $r = [
     'bairro' => $str($d['bairro'] ?? '', 120),
     'fundacao' => (int) ($d['fundacao'] ?? 0),
     'funcionarios' => $int($d['funcionarios'] ?? 0),
-    'area' => $int($d['area'] ?? 0),
+    'area' => $opt($d['area'] ?? null) ?: null,
     'horario' => $str($d['horario'] ?? ''),
     'descricao' => $str($d['descricao'] ?? '', 1200),
     'preco' => $int($d['preco'] ?? 0),
     'faturamento' => $int($d['faturamento'] ?? 0),
-    'margem' => max(0, min(100, (float) ($d['margem'] ?? 0))),
-    'folha' => $int($d['folha'] ?? 0),
-    'aluguel' => $int($d['aluguel'] ?? 0),
-    'estoque' => $int($d['estoque'] ?? 0),
-    'bens' => $int($d['bens'] ?? 0),
+    'margem' => (($d['margem'] ?? null) === null || $d['margem'] === '') ? null : max(0, min(100, (float) $d['margem'])),
+    'folha' => $opt($d['folha'] ?? null),
+    'aluguel' => $opt($d['aluguel'] ?? null),
+    'estoque' => $opt($d['estoque'] ?? null),
+    'bens' => $opt($d['bens'] ?? null),
     'energia_solar' => !empty($d['energiaSolar']) ? 1 : 0,
     'imovel' => in_array($d['imovel'] ?? '', ['proprio', 'alugado'], true) ? $d['imovel'] : '',
     'aceita_proposta' => !empty($d['aceitaProposta']) ? 1 : 0,
@@ -54,6 +56,9 @@ $r = [
     'motivo' => $str($d['motivo'] ?? '', 2000),
     'foto_tipo' => ($d['fotoTipo'] ?? '') === 'ilustrativas' ? 'ilustrativas' : 'reais',
 ];
+
+/* own building and no rent typed: the listing shows "Imóvel próprio" */
+if ($r['imovel'] === 'proprio' && $r['aluguel'] === null) $r['aluguel'] = 0;
 
 $erros = [];
 if (mb_strlen($r['resp_nome']) < 5 || !str_contains($r['resp_nome'], ' ')) $erros[] = 'nome completo';

@@ -33,36 +33,39 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
 
             <section class="adm-panel"><h2><i data-lucide="file-text"></i>Texto do anúncio</h2>
               <div class="note warn" style="margin-bottom:16px"><i data-lucide="eye-off"></i><span>Não coloque o nome da empresa, endereço ou qualquer coisa que identifique o negócio.</span></div>
+              <div class="field"><label for="titulo">Título do anúncio <span class="muted" style="font-weight:500">(opcional)</span></label><input class="input" id="titulo" maxlength="120" placeholder="Ex.: Adega de vinhos com bistrô"><small id="titulo-hint"></small><span class="error">O título precisa de pelo menos 5 letras.</span></div>
               <div class="field"><label for="descricao">Descrição</label><textarea class="textarea" id="descricao" style="min-height:140px"></textarea><small><span id="desc-count">0</span> caracteres · mínimo 30</small><span class="error">Escreva pelo menos 30 caracteres.</span></div>
             </section>
 
             <section class="adm-panel"><h2><i data-lucide="building-2"></i>Estrutura</h2>
               <div class="grid-3">
-                <div class="field"><label for="fundacao">Ano de fundação</label><input class="input" id="fundacao" type="number"></div>
-                <div class="field"><label for="funcionarios">Funcionários</label><input class="input" id="funcionarios" type="number" min="0"></div>
-                <div class="field"><label for="area">Área (m²)</label><input class="input" id="area" type="number" min="0"></div>
+                <div class="field"><label for="fundacao">Ano de fundação</label><input class="input" id="fundacao" type="number"><label class="na"><input type="checkbox" data-na="fundacao">Não informado</label></div>
+                <div class="field"><label for="funcionarios">Funcionários</label><input class="input" id="funcionarios" type="number" min="0"><label class="na"><input type="checkbox" data-na="funcionarios">Não informado</label></div>
+                <div class="field"><label for="area">Área (m²)</label><input class="input" id="area" type="number" min="0"><label class="na"><input type="checkbox" data-na="area">Não informado</label></div>
               </div>
               <div class="grid-2">
-                <div class="field"><label for="horario">Horário</label><input class="input" id="horario"></div>
+                <div class="field"><label for="horario">Horário</label><input class="input" id="horario"><label class="na"><input type="checkbox" data-na="horario">Não informado</label></div>
                 <div class="field"><label for="cnpj">Venda com CNPJ</label><select class="select" id="cnpj"><option>Indiferente</option><option>Sim</option><option>Não</option></select></div>
               </div>
               <label class="switch"><span><strong>Marca inclusa na venda</strong></span><input type="checkbox" id="marca"></label>
             </section>
 
             <section class="adm-panel"><h2><i data-lucide="bar-chart-3"></i>Valores</h2>
+              <p class="muted" style="font-size:.88rem;margin:-4px 0 16px">Não quer mostrar algum número? Marque <strong>Sob consulta</strong> ou <strong>Não informado</strong> embaixo do campo. Campo vazio também fica assim no site, nunca como zero.</p>
               <div class="grid-3">
                 <div class="field"><label for="preco">Valor pedido</label><input class="input" id="preco" data-mask="money"><span class="error">Informe o valor.</span></div>
-                <div class="field"><label for="faturamento">Faturamento/mês</label><input class="input" id="faturamento" data-mask="money"></div>
-                <div class="field"><label for="margem">Margem (%)</label><input class="input" id="margem" type="number" min="0" max="100"></div>
+                <div class="field"><label for="faturamento">Faturamento/mês</label><input class="input" id="faturamento" data-mask="money"><label class="na"><input type="checkbox" data-na="faturamento">Sob consulta</label></div>
+                <div class="field"><label for="margem">Margem (%)</label><input class="input" id="margem" type="number" min="0" max="100"><label class="na"><input type="checkbox" data-na="margem">Sob consulta</label></div>
               </div>
               <div class="grid-3">
-                <div class="field"><label for="folha">Folha</label><input class="input" id="folha" data-mask="money"></div>
-                <div class="field"><label for="aluguel">Aluguel + cond.</label><input class="input" id="aluguel" data-mask="money"></div>
-                <div class="field"><label for="estoque">Estoque</label><input class="input" id="estoque" data-mask="money"></div>
+                <div class="field"><label for="folha">Folha</label><input class="input" id="folha" data-mask="money"><label class="na"><input type="checkbox" data-na="folha">Sob consulta</label></div>
+                <div class="field"><label for="aluguel">Aluguel + cond.</label><input class="input" id="aluguel" data-mask="money"><label class="na"><input type="checkbox" data-na="aluguel">Não informado</label></div>
+                <div class="field"><label for="estoque">Estoque</label><input class="input" id="estoque" data-mask="money"><label class="na"><input type="checkbox" data-na="estoque">Não informado</label></div>
               </div>
               <div class="grid-2">
-                <div class="field"><label for="bens">Valor estimado dos bens incluídos</label><input class="input" id="bens" data-mask="money"></div>
+                <div class="field"><label for="bens">Valor estimado dos bens incluídos</label><input class="input" id="bens" data-mask="money"><label class="na"><input type="checkbox" data-na="bens">Não informado</label></div>
               </div>
+              <small class="muted" style="display:block;margin:-6px 0 14px">Aluguel R$ 0 aparece como Imóvel próprio e estoque R$ 0 como Sem estoque.</small>
               <label class="switch"><span><strong>Aceita proposta</strong></span><input type="checkbox" id="aceitaProposta"></label>
             </section>
 
@@ -116,15 +119,32 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
       Store.cidades(true).forEach(c =>
         $('cidade').insertAdjacentHTML('beforeend', '<option value="' + c.slug + '">' + esc(c.nome) + '/' + c.uf + '</option>'));
 
-      const moneyIn = v => v ? 'R$ ' + Number(v).toLocaleString('pt-BR') : '';
+      /* 0 stays "R$ 0" (aluguel 0 = imóvel próprio, estoque 0 = sem estoque); null stays empty */
+      const moneyIn = v => v == null || v === '' ? '' : 'R$ ' + Number(v).toLocaleString('pt-BR');
+
+      /* "Sob consulta" / "Não informado": ticking clears the field, typing a value unticks it */
+      const NA = {};
+      document.querySelectorAll('[data-na]').forEach(cb => {
+        const inp = $(cb.dataset.na), ph = inp.placeholder || '';
+        const sync = () => { if (cb.checked) inp.value = ''; inp.placeholder = cb.checked ? cb.parentNode.textContent.trim() : ph; inp.classList.toggle('na-on', cb.checked); };
+        cb.addEventListener('change', () => { sync(); preview(); });
+        inp.addEventListener('input', () => { if (cb.checked && inp.value.trim()) { cb.checked = false; sync(); } });
+        NA[cb.dataset.na] = { cb, sync };
+      });
+      const setNa = (id, on) => { NA[id].cb.checked = on; NA[id].sync(); };
+      /* null when ticked or empty */
+      const opt = (id, parse) => { const v = $(id).value.trim(); return NA[id].cb.checked || v === '' ? null : parse(v); };
+
       function fill(src) {
         $('segmento').value = src.segmento || ''; $('cidade').value = src.cidade || ''; $('bairro').value = src.bairro || '';
+        $('titulo').value = src.titulo || '';
         $('descricao').value = src.descricao || ''; $('fundacao').value = src.fundacao || ''; $('funcionarios').value = src.funcionarios ?? '';
         $('area').value = src.area || ''; $('horario').value = src.horario || ''; $('cnpj').value = src.cnpj || 'Indiferente';
         $('marca').checked = !!src.marca; $('preco').value = moneyIn(src.preco); $('faturamento').value = moneyIn(src.faturamento);
-        $('margem').value = src.margem || ''; $('folha').value = moneyIn(src.folha); $('aluguel').value = moneyIn(src.aluguel);
+        $('margem').value = src.margem ?? ''; $('folha').value = moneyIn(src.folha); $('aluguel').value = moneyIn(src.aluguel);
         $('estoque').value = moneyIn(src.estoque); $('destaque').checked = !!src.destaque;
-        $('bens').value = moneyIn(src.bens); $('aceitaProposta').checked = !!src.aceitaProposta;
+        $('bens').value = src.bens ? moneyIn(src.bens) : ''; $('aceitaProposta').checked = !!src.aceitaProposta;
+        Object.keys(NA).forEach(k => setNa(k, $(k).value.trim() === ''));
         fotos = (src.fotos || []).slice();
         if (!fotos.length && src.segmento && src.fotoTipo === 'ilustrativas') fotos = PP.segFotos(src.segmento);
       }
@@ -181,13 +201,14 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
       /* ---------- live preview ---------- */
       function current() {
         return {
+          titulo: $('titulo').value.trim().replace(/\s+/g, ' '),
           segmento: $('segmento').value || 'outros', cidade: $('cidade').value, bairro: $('bairro').value.trim(),
-          descricao: $('descricao').value.trim(), fundacao: Number($('fundacao').value) || new Date().getFullYear(),
-          funcionarios: Number($('funcionarios').value) || 0, area: Number($('area').value) || 0, horario: $('horario').value.trim(),
-          cnpj: $('cnpj').value, marca: $('marca').checked, preco: PP.unmoney($('preco').value), faturamento: PP.unmoney($('faturamento').value),
-          margem: Number($('margem').value) || 0, folha: PP.unmoney($('folha').value), aluguel: PP.unmoney($('aluguel').value),
-          estoque: PP.unmoney($('estoque').value), destaque: $('destaque').checked, fotos: fotos.slice(),
-          bens: PP.unmoney($('bens').value), aceitaProposta: $('aceitaProposta').checked,
+          descricao: $('descricao').value.trim(), fundacao: opt('fundacao', Number),
+          funcionarios: opt('funcionarios', Number), area: opt('area', Number) || null, horario: NA.horario.cb.checked ? '' : $('horario').value.trim(),
+          cnpj: $('cnpj').value, marca: $('marca').checked, preco: PP.unmoney($('preco').value), faturamento: opt('faturamento', PP.unmoney),
+          margem: opt('margem', Number), folha: opt('folha', PP.unmoney), aluguel: opt('aluguel', PP.unmoney),
+          estoque: opt('estoque', PP.unmoney), destaque: $('destaque').checked, fotos: fotos.slice(),
+          bens: opt('bens', PP.unmoney) || null, aceitaProposta: $('aceitaProposta').checked,
           fotoTipo: fotos.length && fotos.every(f => f.startsWith('u:')) ? 'ilustrativas' : 'reais'
         };
       }
@@ -199,19 +220,22 @@ admin_head($anuncio ? 'Anúncio ' . $anuncio['codigo'] : 'Novo anúncio', 'anunc
         const s = PP.seg(d.segmento), where = d.cidade ? PP.cidadeLabel(d.cidade) : 'Cidade';
         const slug = s.slug + '-em-' + (d.cidade || 'cidade') + '-' + (anuncio ? anuncio.codigo.toLowerCase() : 'pp0000');
         $('ss-url').textContent = location.host + ' › empresa-a-venda › ' + slug;
-        $('ss-title').textContent = s.nome + ' à venda em ' + where + ' · ' + money(d.preco);
-        $('ss-desc').textContent = s.nome + ' à venda em ' + (d.bairro ? d.bairro + ', ' : '') + where + ' por ' + money(d.preco) + '. Faturamento médio de ' + money(d.faturamento) + '/mês, ' + d.funcionarios + ' funcionários.';
+        $('ss-title').textContent = (d.titulo ? d.titulo + ' · ' + where : s.nome + ' à venda em ' + where) + ' · ' + money(d.preco);
+        $('ss-desc').textContent = (d.titulo ? d.titulo + '. ' : '') + s.nome + ' à venda em ' + (d.bairro ? d.bairro + ', ' : '') + where + ' por ' + money(d.preco) + '.' +
+          (d.faturamento != null ? ' Faturamento médio de ' + money(d.faturamento) + '/mês.' : '') +
+          (d.funcionarios != null ? ' ' + d.funcionarios + (d.funcionarios === 1 ? ' funcionário.' : ' funcionários.') : '');
+        $('titulo-hint').textContent = d.titulo ? (d.titulo.length + ' de 120 caracteres') : 'Em branco o título fica ' + s.nome + ' à venda';
         $('preview').querySelectorAll('a').forEach(a => a.addEventListener('click', e => e.preventDefault()));
         PP.icons();
       }
-      $('form').addEventListener('input', e => { if (e.target.id === 'descricao') $('desc-count').textContent = e.target.value.length; preview(); });
+      $('form').addEventListener('input', e => { if (e.target.id === 'descricao') $('desc-count').textContent = e.target.value.length; const f = e.target.closest('.field'); if (f) f.classList.remove('invalid'); preview(); });
       $('form').addEventListener('change', preview);
 
       /* ---------- save ---------- */
       const v = (id, ok) => { $(id).closest('.field').classList.toggle('invalid', !ok); return ok; };
       async function save(status, btn) {
         const d = current();
-        const ok = [v('segmento', !!$('segmento').value), v('cidade', !!$('cidade').value), v('bairro', !!d.bairro),
+        const ok = [v('segmento', !!$('segmento').value), v('cidade', !!$('cidade').value), v('bairro', !!d.bairro), v('titulo', !d.titulo || d.titulo.length >= 5),
           v('descricao', d.descricao.length >= 30), v('preco', d.preco > 0)].every(Boolean);
         if (!ok) { PP.toast('Confira os campos marcados', 'error'); document.querySelector('.field.invalid').scrollIntoView({ behavior: 'smooth', block: 'center' }); return; }
         if (!d.fotos.length) d.fotos = PP.segFotos(d.segmento);

@@ -283,6 +283,8 @@ site_header('cadastro');
       /* ---------- validation ---------- */
       const v = (id, ok) => { const f = $(id).closest('.field'); f.classList.toggle('invalid', !ok); return ok; };
       const val = id => $(id).value.trim();
+      /* optional numbers: empty stays empty (null), so the listing shows "Não informado" instead of zero */
+      const blank = (id, parse) => val(id) === '' ? null : parse(val(id));
       const rules = {
         1: () => [
           v('nome', val('nome').split(/\s+/).length >= 2 && val('nome').length >= 5),
@@ -394,14 +396,14 @@ site_header('cadastro');
           empresa: { nome: val('empresa'), cnpj: val('cnpj'), razaoSocial: val('razaoSocial'), instagram: val('instagram'), site: val('siteEmpresa') },
           endereco: { cep: val('cep'), rua: val('rua'), numero: val('numero'), complemento: val('complemento') },
           imovel: form.imovel.value, energiaSolar: form.energiaSolar.value === '1',
-          bens: PP.unmoney(val('bens')), aceitaProposta: form.aceitaProposta.value === '1', aceiteComissao: $('comissao').checked,
+          bens: blank('bens', PP.unmoney), aceitaProposta: form.aceitaProposta.value === '1', aceiteComissao: $('comissao').checked,
           segmento: val('segmento'),
           cidade: cid === 'outra' ? '' : cid, cidadeOutra: cid === 'outra' ? val('cidadeOutra') : '',
           bairro: val('bairro'), fundacao: Number(val('fundacao')), funcionarios: Number(val('funcionarios')),
-          area: Number(val('area')) || 0, horario: val('horario'), descricao: val('descricao'),
+          area: blank('area', Number), horario: val('horario'), descricao: val('descricao'),
           preco: PP.unmoney(val('preco')), faturamento: PP.unmoney(val('faturamento')),
-          margem: Number(val('margem')) || 0, folha: PP.unmoney(val('folha')), aluguel: PP.unmoney(val('aluguel')),
-          estoque: PP.unmoney(val('estoque')), cnpj: form.cnpjVenda.value, marca: form.marca.value === '1',
+          margem: blank('margem', Number), folha: blank('folha', PP.unmoney), aluguel: blank('aluguel', PP.unmoney),
+          estoque: blank('estoque', PP.unmoney), cnpj: form.cnpjVenda.value, marca: form.marca.value === '1',
           motivo: val('motivo'), fotoTipo: form.fotoTipo.value,
           fotos: form.fotoTipo.value === 'reais' ? fotos.filter(Boolean) : []
         };
