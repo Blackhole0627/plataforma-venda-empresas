@@ -20,6 +20,14 @@ Em Anúncios você pode editar, pausar, tirar do ar, marcar como destaque ou exc
 
 No site, quem clica no código do anúncio copia o código na hora, pra colar no WhatsApp.
 
+**Título do anúncio.** Campo opcional em Texto do anúncio, tipo "Adega de vinhos com bistrô". Aparece no card, na página do anúncio e no Google. Em branco, o título fica com o nome do segmento, tipo "Bar e pub à venda". Não coloque o nome da empresa no título.
+
+**Sob consulta e Não informado.** Embaixo dos números tem uma caixinha. Faturamento, margem e folha mostram Sob consulta, e o resto mostra Não informado. Campo vazio fica igual no site, nunca como zero. Pra voltar a mostrar o número, é só digitar o valor que a caixinha desmarca sozinha. Aluguel R$ 0 aparece como Imóvel próprio e estoque R$ 0 como Sem estoque.
+
+## Segmentos
+
+O site já vem com 66 segmentos. Em Segmentos você adiciona um novo com nome, descrição curta, grupo e ícone. Ele aparece na hora na lista do site, nos filtros, no cadastro do vendedor e na criação de anúncios. Dá pra editar ou remover depois. Segmento com anúncio ou cadastro não pode ser removido, troque o segmento deles antes. Anúncio sem foto num segmento novo usa as fotos ilustrativas de Outros.
+
 ## Cidades
 
 As 27 capitais já estão lá. Em Cidades você adiciona uma cidade nova, e ela ganha a própria página no site.
