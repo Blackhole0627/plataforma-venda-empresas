@@ -117,7 +117,7 @@ function site_footer(): void
     </ul></div>
     <div><h4>Atendimento</h4><ul class="footer-contact">
       <li><?= ic('message-circle') . h(cfg('whatsapp_label')) ?></li>
-      <li><?= ic('mail') . h(cfg('email')) ?></li>
+      <li><?= ic('mail') ?><span><?= str_replace('@', '@<wbr>', h(cfg('email'))) ?></span></li>
       <li><?= ic('clock') . h(cfg('horario')) ?></li>
     </ul></div>
   </div>
