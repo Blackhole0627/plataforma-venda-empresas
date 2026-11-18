@@ -1,9 +1,10 @@
 <?php
-/* POST multipart: dados (JSON), fotos[] (images), site (honeypot) */
+/* POST multipart: dados (JSON), fotos[] (images), pp_check (hidden field), pp_ms (time on the page) */
 require dirname(__DIR__) . '/inc/bootstrap.php';
 
 if (!is_post()) json_error('Método inválido.', 405);
-if (!empty($_POST['site'])) json_out(['cadastro' => ['protocolo' => 'CAD-0000-0000', 'responsavel' => ['whatsapp' => '']]]); // bot
+/* bot = hidden field filled AND sent in under 15s. A browser autofilling the hidden field never drops a real seller, who takes minutes on the form. */
+if (is_bot((string) ($_POST['pp_check'] ?? $_POST['site'] ?? ''), (int) ($_POST['pp_ms'] ?? 0), 15000)) json_out(['cadastro' => ['protocolo' => 'CAD-0000-0000', 'responsavel' => ['whatsapp' => '']]]);
 
 $d = json_decode((string) ($_POST['dados'] ?? ''), true);
 if (!is_array($d)) json_error('Dados inválidos. Recarregue a página e tente de novo.');

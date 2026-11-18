@@ -39,7 +39,7 @@ site_header('contato');
               </select></div>
           </div>
           <div class="field"><label for="msg">Mensagem</label><textarea class="textarea" id="msg" maxlength="3000" placeholder="Escreva aqui"></textarea>
-            <input type="text" id="site" name="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true"><span class="error">Escreva sua mensagem.</span></div>
+            <input type="text" id="pp_check" name="pp_check" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true"><span class="error">Escreva sua mensagem.</span></div>
           <button class="btn btn-primary btn-lg" type="submit"><i data-lucide="send"></i> Enviar mensagem</button>
         </form>
         <div class="success hidden" id="success">
@@ -68,7 +68,7 @@ site_header('contato');
     (function () {
       const $ = id => document.getElementById(id);
 
-      const cod = PP.param('anuncio');
+      const cod = PP.param('anuncio'), T0 = Date.now();
       if (cod) { $('assunto').value = 'Dúvida sobre um anúncio'; $('msg').value = 'Olá! Tenho interesse no anúncio ' + cod + '. '; }
 
       PP.bindMasks();
@@ -86,7 +86,7 @@ site_header('contato');
         btn.disabled = true;
         try {
           await PP.api('/api/contato', { nome: $('nome').value.trim(), whatsapp: $('tel').value.trim(), email: $('email').value.trim(),
-            assunto: $('assunto').value, mensagem: $('msg').value.trim(), anuncio: cod || '', site: $('site').value });
+            assunto: $('assunto').value, mensagem: $('msg').value.trim(), anuncio: cod || '', pp_check: $('pp_check').value, pp_ms: Date.now() - T0 });
           $('form').classList.add('hidden'); $('success').classList.remove('hidden'); PP.icons();
         } catch (err) { PP.toast(err.message, 'error'); btn.disabled = false; }
       });

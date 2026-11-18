@@ -226,6 +226,17 @@ function csrf_ok(?string $t): bool
     return is_string($t) && !empty($_SESSION['csrf']) && hash_equals($_SESSION['csrf'], $t);
 }
 
+/* ---------- spam check for the public forms ---------- */
+function is_bot(string $hidden, int $ms, int $minMs): bool
+{
+    if (trim($hidden) === '') return false;
+    if ($ms >= $minMs) {
+        error_log('form: hidden field filled (browser autofill?), kept: ' . mb_substr($hidden, 0, 60));
+        return false;
+    }
+    return true;
+}
+
 /* ---------- e-mail notice (best effort) ---------- */
 function notify(string $subject, string $body): bool
 {

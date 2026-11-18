@@ -219,7 +219,7 @@ site_header('cadastro');
             </div>
           </div>
 
-          <input type="text" name="site" id="site" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
+          <input type="text" name="pp_check" id="pp_check" tabindex="-1" autocomplete="off" class="hp" aria-hidden="true">
           <div class="form-actions" id="actions">
             <button type="button" class="btn btn-ghost" id="prev"><i data-lucide="arrow-left"></i> Voltar</button>
             <button type="button" class="btn btn-primary" id="next">Continuar <i data-lucide="arrow-right"></i></button>
@@ -246,7 +246,7 @@ site_header('cadastro');
   <script>
     (function () {
       const { Store, SEGMENTOS, esc } = PP;
-      const MAX_FOTOS = 15;
+      const MAX_FOTOS = 15, T0 = Date.now();
       const $ = id => document.getElementById(id);
       const form = $('form');
       let step = 1;
@@ -425,7 +425,7 @@ site_header('cadastro');
         const d = data();
         const fd = new FormData();
         fd.append('dados', JSON.stringify(Object.assign({}, d, { fotos: undefined })));
-        fd.append('site', $('site').value);
+        fd.append('pp_check', $('pp_check').value); fd.append('pp_ms', String(Date.now() - T0));
         d.fotos.forEach((f, i) => fd.append('fotos[]', PP.dataUrlToBlob(f), 'foto-' + (i + 1) + '.jpg'));
         let c;
         try {

@@ -1,10 +1,10 @@
 <?php
-/* POST JSON: nome, whatsapp, email, assunto, mensagem, anuncio, site (honeypot) */
+/* POST JSON: nome, whatsapp, email, assunto, mensagem, anuncio, pp_check (hidden field), pp_ms (time on the page) */
 require dirname(__DIR__) . '/inc/bootstrap.php';
 
 if (!is_post()) json_error('Método inválido.', 405);
 $d = json_body();
-if (!empty($d['site'])) json_out(['ok' => true]); // bot
+if (is_bot((string) ($d['pp_check'] ?? $d['site'] ?? ''), (int) ($d['pp_ms'] ?? 0), 4000)) json_out(['ok' => true]);
 
 $st = db()->prepare('SELECT COUNT(*) FROM contatos WHERE ip = ? AND criado_em > ?');
 $st->execute([client_ip(), date('Y-m-d H:i:s', time() - 3600)]);
